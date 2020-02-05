@@ -1,8 +1,8 @@
-# Template package
-This is a github template for creating cross platform packages with c++ python
+# Stereo 3D
+Package for generating 3D data from stereo images.
 
 # Python
-Full description of python package can be found [here](https://github.com/i3drobotics/TemplatePackage/blob/master/pyTemplatePackage/TemplatePackage/README.md)
+Full description of python package can be found [here](https://github.com/i3drobotics/Stereo3D/blob/master/pyStereo3D/Stereo3D/README.md)
 
 # C++
-Full description of C++ package can be found [here](https://github.com/i3drobotics/TemplatePackage/blob/master/cppTemplatePackage/README.md)
+Full description of C++ package can be found [here](https://github.com/i3drobotics/Stereo3D/blob/master/cppStereo3D/README.md)
