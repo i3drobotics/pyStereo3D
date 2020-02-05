@@ -1,0 +1,75 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Python SetupTools Build",
+            "type": "shell",
+            "command": "python setup.py sdist bdist_wheel",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Python SetupTools UploadTest",
+            "type": "shell",
+            "command": "python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Python SetupTools Upload",
+            "type": "shell",
+            "command": "python -m twine upload dist/*",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Python SetupTools Clean",
+            "type": "shell",
+            "command": "python setup.py clean --all && python setup.py rotate --match=.tar.gz,.whl,.egg,.egg-info --keep=0",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}
