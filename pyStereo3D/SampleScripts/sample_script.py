@@ -1,22 +1,49 @@
 from Stereo3D import Stereo3D
-from StereoCapture import StereoCapture, CVCapture, CVImageCapture, StereoCaptureCVDual, StereoCaptureCVSplit
+from StereoCapture import *
 
-'''
-# create opencv camera (CVCapture object)
-cvcam = CVCapture(0)
-# create opencv stereo camera (StereoCaptureCVDual object)
-stcvcam = StereoCaptureCVDual(cvcam)
-# create generic stereo camera (StereoCapture object)
-stcam = StereoCapture(stcvcam)
-'''
+# define camera capture types
+CAMERA_TYPE_PYLON = 0
+CAMERA_TYPE_IC = 1
+CAMERA_TYPE_OPENCV_SPLIT = 2
+CAMERA_TYPE_OPENCV_DUAL = 3
+CAMERA_TYPE_OPENCV_IMAGE = 4
+CAMERA_TYPE_OPENCV_FOLDER = 5
 
-# create opencv camera (CVCapture object)
-cvcamL = CVImageCapture("pyStereo3D/SampleData/left.png")
-cvcamR = CVImageCapture("pyStereo3D/SampleData/right.png")
-# create opencv stereo camera (StereoCaptureCVDual object)
-stcvcam = StereoCaptureCVSplit(cvcamL,cvcamR)
-# create generic stereo camera (StereoCapture object)
-stcam = StereoCapture(stcvcam)
+# select camera capture type
+camera_type = CAMERA_TYPE_OPENCV_IMAGE
+
+# setup stereo camera
+stcam = None
+if (camera_type == CAMERA_TYPE_PYLON): # Pylon camera capture
+    left_camera_serial = "22864917"
+    right_camera_serial = "22864912"
+    camL = PylonCapture(left_camera_serial)
+    camR = PylonCapture(right_camera_serial)
+    stcam = StereoCapturePylon(camL,camR)
+elif (camera_type == CAMERA_TYPE_IC):  # IC camera capture
+    #TODO ICCapture module is linux only so class not included in the package untill windows support is added
+    pass
+elif (camera_type == CAMERA_TYPE_OPENCV_SPLIT): # OpenCV
+    camL = CVCapture(0)
+    camR = CVCapture(1)
+    stcam = StereoCaptureCVSplit(camL,camR)
+elif (camera_type == CAMERA_TYPE_OPENCV_DUAL): # OpenCV (One camera has left and right stored in red and green channels)
+    cam = CVCapture(0)
+    stcam = StereoCaptureCVDual(cam)
+elif (camera_type == CAMERA_TYPE_OPENCV_IMAGE): # Read left and right from image
+    camL = CVImageCapture("pyStereo3D/SampleData/left.png")
+    camR = CVImageCapture("pyStereo3D/SampleData/right.png")
+    stcam = StereoCaptureCVSplit(camL,camR)
+elif (camera_type == CAMERA_TYPE_OPENCV_FOLDER): # Read left and right from images in folders (MUST be in seperate folders)
+    camL = CVImageFolderCapture("pyStereo3D/SampleData/left/")
+    camR = CVImageFolderCapture("pyStereo3D/SampleData/right/")
+    stcam = StereoCaptureCVSplit(camL,camR)
+else:
+    print("Invalid camera type.")
+    exit()
+
+# load stereo camera into generic stereo camera capture class
+stcap = StereoCapture(stcam)
 
 # define inout folder
 folder = "pyStereo3D/SampleData/"
@@ -24,5 +51,7 @@ folder = "pyStereo3D/SampleData/"
 left_cal_file = folder + "left.yaml"
 right_cal_file = folder + "right.yaml"
 
-s3D = Stereo3D(left_cal_file,right_cal_file,stcam)
+# setup Stereo3D
+s3D = Stereo3D(left_cal_file,right_cal_file,stcap)
+# run Stereo3D GUI for generating 3D
 s3D.run(folder)

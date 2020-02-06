@@ -2,6 +2,7 @@ import StereoCapture
 import numpy as np
 import cv2
 import os
+import time
 from pymsgbox import *
 
 class Stereo3D():
@@ -28,24 +29,33 @@ class Stereo3D():
         self.disparity = None
         self.depth = None
 
-        self.cv_window_name_3D = "[Stereo3D]"
+        self.cv_window_name_Controls = "[Stereo3D] Controls"
+        self.cv_window_name_Images = "[Stereo3D] Images"
 
-        cv2.namedWindow(self.cv_window_name_3D,cv2.WINDOW_NORMAL)
+        cv2.namedWindow(self.cv_window_name_Controls,cv2.WINDOW_NORMAL)
+        cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
 
         default_min_disp = 500
         default_num_disparities = 20
         default_block_size = 21
+        default_uniqueness_ratio = 15
+        default_texture_threshold = 15
         default_speckle_size = 0
         default_speckle_range = 500
 
-        cv2.createTrackbar("Min disp", self.cv_window_name_3D , default_min_disp, 1000, self.on_min_disparity_trackbar)
-        cv2.createTrackbar("Disp", self.cv_window_name_3D , default_num_disparities, 30, self.on_num_disparities_trackbar)
-        cv2.createTrackbar("Blck sze", self.cv_window_name_3D , default_block_size, 100, self.on_block_size_trackbar)
+        cv2.createTrackbar("Min disp", self.cv_window_name_Controls , default_min_disp, 1000, self.on_min_disparity_trackbar)
+        cv2.createTrackbar("Disp", self.cv_window_name_Controls , default_num_disparities, 30, self.on_num_disparities_trackbar)
+        cv2.createTrackbar("Blck sze", self.cv_window_name_Controls , default_block_size, 100, self.on_block_size_trackbar)
 
-        cv2.createTrackbar("Sp size", self.cv_window_name_3D , default_speckle_size, 30, self.on_speckle_size_trackbar)
-        cv2.createTrackbar("Sp range", self.cv_window_name_3D , default_speckle_range, 100, self.on_speckle_range_trackbar)
+        cv2.createTrackbar("Uniq", self.cv_window_name_Controls , default_uniqueness_ratio, 100, self.on_uniqueness_ratio_trackbar)
+        cv2.createTrackbar("Texture", self.cv_window_name_Controls , default_texture_threshold, 100, self.on_texture_threshold_trackbar)
 
-        cv2.setMouseCallback(self.cv_window_name_3D, self.on_window_mouse)
+        cv2.createTrackbar("Sp size", self.cv_window_name_Controls , default_speckle_size, 30, self.on_speckle_size_trackbar)
+        cv2.createTrackbar("Sp range", self.cv_window_name_Controls , default_speckle_range, 100, self.on_speckle_range_trackbar)
+
+        cv2.setMouseCallback(self.cv_window_name_Images, self.on_window_mouse)
+
+        cv2.resizeWindow(self.cv_window_name_Controls, 400,0 )
 
         # Once init has been called matcher can be changed e.g.
         # s3D = Stereo3D()
@@ -55,8 +65,8 @@ class Stereo3D():
         self.matcher.setBlockSize(calc_block)
         self.matcher.setMinDisparity(int(default_min_disp - 500))
         self.matcher.setNumDisparities(16*(default_num_disparities+1))
-        self.matcher.setUniquenessRatio(15)
-        self.matcher.setTextureThreshold(10)
+        self.matcher.setUniquenessRatio(default_uniqueness_ratio)
+        self.matcher.setTextureThreshold(default_texture_threshold)
         self.matcher.setSpeckleWindowSize(default_speckle_size)
         self.matcher.setSpeckleRange(default_speckle_range)
 
@@ -177,6 +187,12 @@ class Stereo3D():
     def on_num_disparities_trackbar(self,val):
         self.matcher.setNumDisparities(16*(val+1))
 
+    def on_texture_threshold_trackbar(self,val):
+        self.matcher.setTextureThreshold(val)
+
+    def on_uniqueness_ratio_trackbar(self,val):
+        self.matcher.setUniquenessRatio(val)
+
     def on_speckle_size_trackbar(self,val):
         self.matcher.setSpeckleWindowSize(val)
 
@@ -207,8 +223,10 @@ class Stereo3D():
             disp_spacer = np.zeros((960, 640), np.uint8)
             disp_spaced = np.concatenate((disp_spacer, disp_resized, disp_spacer), axis=1)
             display_image = np.concatenate((disp_spaced, left_right_dual), axis=0)
+
+            display_image_resize = cv2.resize(display_image, (1280, 1280), interpolation = cv2.INTER_AREA)
             
-            cv2.imshow(self.cv_window_name_3D, display_image)
+            cv2.imshow(self.cv_window_name_Images, display_image_resize)
 
             return True, disp
         else:
@@ -235,14 +253,14 @@ class Stereo3D():
 
         # generate depth from disparity
         print("Generating depth from disparity...")
-        depth = s3D.genDepth(disparity)
+        depth = self.genDepth(disparity)
         print("Saving point cloud...")
         # write 3D data to ply with color from image on points
-        s3D.write_ply(ply_filename,disparity,depth,image)
+        self.write_ply(ply_filename,disparity,depth,image)
         print("Point cloud save complete.")
         alert('3D point cloud saved.', 'Save 3D Point Cloud')
 
-    def run(self,defaultSaveFolder=""):
+    def run(self,defaultSaveFolder="",frame_delay=0):
         if (self.calLoaded):
             # connect to stereo camera
             self.connect()
@@ -254,41 +272,34 @@ class Stereo3D():
                 if k == ord('q'): # exit if 'q' key pressed
                     break
                 elif k == ord('s'): # save stereo image pair
-                    left_file_string="%(save_index)d_l.png"
-                    right_file_string="%(save_index)d_r.png"
-                    self.save_images(s3D.image_left,s3D.image_right,defaultSaveFolder,left_file_string,right_file_string)
+                    left_file_string=str(save_index)+"_l.png"
+                    right_file_string=str(save_index)+"_r.png"
+                    self.save_images(self.image_left,self.image_right,defaultSaveFolder,left_file_string,right_file_string)
                     save_index += 1
                 elif k == ord('r'): # save rectified stereo image pair
-                    left_file_string="rect_%(save_index)d_l.png"
-                    right_file_string="rect_%(save_index)d_r.png"
-                    self.save_images(s3D.rect_image_left,s3D.rect_image_right,defaultSaveFolder,left_file_string,right_file_string)
+                    left_file_string="rect_"+str(save_index)+"_l.png"
+                    right_file_string="rect_"+str(save_index)+"_r.png"
+                    self.save_images(self.rect_image_left,self.rect_image_right,defaultSaveFolder,left_file_string,right_file_string)
                     save_index += 1
                 elif k == ord('p'): # save 3D data as point cloud
-                    points_file_string = "points_%(save_index)d.ply"
+                    points_file_string = "points_"+str(save_index)+".ply"
                     self.save_point_cloud(disp,self.rect_image_left,defaultSaveFolder,points_file_string)
                     save_index += 1
-                if cv2.getWindowProperty(self.cv_window_name_3D,cv2.WND_PROP_VISIBLE) < 1:        
+                if cv2.getWindowProperty(self.cv_window_name_Images,cv2.WND_PROP_VISIBLE) < 1:        
                     break
+                if cv2.getWindowProperty(self.cv_window_name_Controls,cv2.WND_PROP_VISIBLE) < 1:        
+                    break
+                time.sleep(frame_delay)
         else:
             print("Failed to calibration files so cannot continue.")
 
 if __name__ == "__main__":
-    # create opencv camera (CVCapture object)
-    cvcamL = StereoCapture.CVImageCapture("pyStereo3D/SampleData/left.png")
-    cvcamR = StereoCapture.CVImageCapture("pyStereo3D/SampleData/right.png")
-    # create opencv stereo camera (StereoCaptureCVDual object)
-    stcvcam = StereoCapture.StereoCaptureCVSplit(cvcamL,cvcamR)
-    # create generic stereo camera (StereoCapture object)
-    stcam = StereoCapture.StereoCapture(stcvcam)
-
-    '''
     # create opencv camera (CVCapture object)
     cvcam = StereoCapture.CVCapture(0)
     # create opencv stereo camera (StereoCaptureCVDual object)
     stcvcam = StereoCapture.StereoCaptureCVDual(cvcam)
     # create generic stereo camera (StereoCapture object)
     stcam = StereoCapture.StereoCapture(stcvcam)
-    '''
 
     # define inout folder
     folder = "pyStereo3D/SampleData/"
