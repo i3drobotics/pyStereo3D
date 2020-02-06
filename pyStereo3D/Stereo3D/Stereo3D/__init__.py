@@ -35,15 +35,15 @@ class Stereo3D():
         cv2.namedWindow(self.cv_window_name_Controls,cv2.WINDOW_NORMAL)
         cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
 
-        default_min_disp = 500
+        default_min_disp = 1000
         default_num_disparities = 20
-        default_block_size = 21
+        default_block_size = 12
         default_uniqueness_ratio = 15
         default_texture_threshold = 15
         default_speckle_size = 0
         default_speckle_range = 500
 
-        cv2.createTrackbar("Min disp", self.cv_window_name_Controls , default_min_disp, 1000, self.on_min_disparity_trackbar)
+        cv2.createTrackbar("Min disp", self.cv_window_name_Controls , default_min_disp, 2000, self.on_min_disparity_trackbar)
         cv2.createTrackbar("Disp", self.cv_window_name_Controls , default_num_disparities, 30, self.on_num_disparities_trackbar)
         cv2.createTrackbar("Blck sze", self.cv_window_name_Controls , default_block_size, 100, self.on_block_size_trackbar)
 
@@ -51,7 +51,7 @@ class Stereo3D():
         cv2.createTrackbar("Texture", self.cv_window_name_Controls , default_texture_threshold, 100, self.on_texture_threshold_trackbar)
 
         cv2.createTrackbar("Sp size", self.cv_window_name_Controls , default_speckle_size, 30, self.on_speckle_size_trackbar)
-        cv2.createTrackbar("Sp range", self.cv_window_name_Controls , default_speckle_range, 100, self.on_speckle_range_trackbar)
+        cv2.createTrackbar("Sp range", self.cv_window_name_Controls , default_speckle_range, 1000, self.on_speckle_range_trackbar)
 
         cv2.setMouseCallback(self.cv_window_name_Images, self.on_window_mouse)
 
@@ -61,9 +61,9 @@ class Stereo3D():
         # s3D = Stereo3D()
         # s3D.matcher = cv2.StereoSGBM_create()
         self.matcher = cv2.StereoBM_create()
-        calc_block = ( int(default_block_size / 2) * 2) + 5
+        calc_block = (2 * default_block_size + 5)
         self.matcher.setBlockSize(calc_block)
-        self.matcher.setMinDisparity(int(default_min_disp - 500))
+        self.matcher.setMinDisparity(int(default_min_disp - 1000))
         self.matcher.setNumDisparities(16*(default_num_disparities+1))
         self.matcher.setUniquenessRatio(default_uniqueness_ratio)
         self.matcher.setTextureThreshold(default_texture_threshold)
@@ -178,11 +178,11 @@ class Stereo3D():
             return np.zeros(disparity.shape, np.uint8)
 
     def on_min_disparity_trackbar(self,val):
-        min_disp = int(val - 500)
+        min_disp = int(val - 1000)
         self.matcher.setMinDisparity(min_disp)
 
     def on_block_size_trackbar(self,val):
-        self.matcher.setBlockSize(( int(val / 2) * 2) + 5)
+        self.matcher.setBlockSize(2 * val + 5)
 
     def on_num_disparities_trackbar(self,val):
         self.matcher.setNumDisparities(16*(val+1))
@@ -203,12 +203,15 @@ class Stereo3D():
         if event == cv2.EVENT_LBUTTONDOWN:
             print("click")
 
-    def grab3D(self,isDisplayImages=False):
+    def grab3D(self,isRectified=False):
         res, image_left, image_right = self.stereo_camera.grab()
         if (res):
             self.image_left = image_left
             self.image_right = image_right
-            self.rect_image_left, self.rect_image_right = self.rectify(image_left, image_right)
+            if (isRectified):
+                self.rect_image_left, self.rect_image_right = self.image_left, self.image_right
+            else:
+                self.rect_image_left, self.rect_image_right = self.rectify(image_left, image_right)
 
             disp = self.gen3D(self.rect_image_left, self.rect_image_right)
             self.disparity = disp
@@ -235,39 +238,41 @@ class Stereo3D():
     def save_images(self, image_left, image_right, defaultSaveFolder="", left_file_string="left.png", right_file_string="right.png"):
         # prompt user for save location
         resp = prompt(text='Saving image pair to path: ', title='Save Image Pair' , default=defaultSaveFolder)
-        # define name of output images
-        left_image_filename = resp + left_file_string
-        right_image_filename = resp + right_file_string
+        if (resp is not None):
+            # define name of output images
+            left_image_filename = resp + left_file_string
+            right_image_filename = resp + right_file_string
 
-        print("Saving stereo image pair...")
-        cv2.imwrite(left_image_filename,image_left)
-        cv2.imwrite(right_image_filename,image_right)
-        print("Stereo image pair saved")
-        alert('Stereo image pair saved.', 'Save Image Pair')
+            print("Saving stereo image pair...")
+            cv2.imwrite(left_image_filename,image_left)
+            cv2.imwrite(right_image_filename,image_right)
+            print("Stereo image pair saved")
+            alert('Stereo image pair saved.', 'Save Image Pair')
 
     def save_point_cloud(self, disparity, image, defaultSaveFolder="", points_file_string="output.ply"):
         # prompt user for save location
         resp = prompt(text='Saving 3D Point Cloud to path: ', title='Save 3D Point Cloud' , default=defaultSaveFolder)
-        # define name of output point cloud ply file
-        ply_filename = resp + points_file_string
+        if (resp is not None):
+            # define name of output point cloud ply file
+            ply_filename = resp + points_file_string
 
-        # generate depth from disparity
-        print("Generating depth from disparity...")
-        depth = self.genDepth(disparity)
-        print("Saving point cloud...")
-        # write 3D data to ply with color from image on points
-        self.write_ply(ply_filename,disparity,depth,image)
-        print("Point cloud save complete.")
-        alert('3D point cloud saved.', 'Save 3D Point Cloud')
+            # generate depth from disparity
+            print("Generating depth from disparity...")
+            depth = self.genDepth(disparity)
+            print("Saving point cloud...")
+            # write 3D data to ply with color from image on points
+            self.write_ply(ply_filename,disparity,depth,image)
+            print("Point cloud save complete.")
+            alert('3D point cloud saved.', 'Save 3D Point Cloud')
 
-    def run(self,defaultSaveFolder="",frame_delay=0):
+    def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0):
         if (self.calLoaded):
             # connect to stereo camera
             self.connect()
             save_index = 0
             while(True):
                 # grab 3D disparity from stereo camera
-                res, disp = self.grab3D()
+                res, disp = self.grab3D(isRectified)
                 k = cv2.waitKey(1)          
                 if k == ord('q'): # exit if 'q' key pressed
                     break
@@ -294,18 +299,62 @@ class Stereo3D():
             print("Failed to calibration files so cannot continue.")
 
 if __name__ == "__main__":
-    # create opencv camera (CVCapture object)
-    cvcam = StereoCapture.CVCapture(0)
-    # create opencv stereo camera (StereoCaptureCVDual object)
-    stcvcam = StereoCapture.StereoCaptureCVDual(cvcam)
-    # create generic stereo camera (StereoCapture object)
-    stcam = StereoCapture.StereoCapture(stcvcam)
+    # define camera capture types
+    CAMERA_TYPE_PYLON = 0
+    CAMERA_TYPE_IC = 1
+    CAMERA_TYPE_OPENCV_SPLIT = 2
+    CAMERA_TYPE_OPENCV_DUAL = 3
+    CAMERA_TYPE_OPENCV_IMAGE = 4
+    CAMERA_TYPE_OPENCV_IMAGE_RECT = 5
+    CAMERA_TYPE_OPENCV_FOLDER = 5
+
+    # select camera capture type
+    camera_type = CAMERA_TYPE_OPENCV_IMAGE_RECT
+
+    # setup stereo camera
+    stcam = None
+    if (camera_type == CAMERA_TYPE_PYLON): # Pylon camera capture
+        left_camera_serial = "22864917"
+        right_camera_serial = "22864912"
+        camL = StereoCapture.PylonCapture(left_camera_serial)
+        camR = StereoCapture.PylonCapture(right_camera_serial)
+        stcam = StereoCapture.StereoCapturePylon(camL,camR)
+    elif (camera_type == CAMERA_TYPE_IC):  # IC camera capture
+        #TODO ICCapture module is linux only so class not included in the package untill windows support is added
+        pass
+    elif (camera_type == CAMERA_TYPE_OPENCV_SPLIT): # OpenCV
+        camL = StereoCapture.CVCapture(0)
+        camR = StereoCapture.CVCapture(1)
+        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
+    elif (camera_type == CAMERA_TYPE_OPENCV_DUAL): # OpenCV (One camera has left and right stored in red and green channels)
+        cam = StereoCapture.CVCapture(0)
+        stcam = StereoCapture.StereoCaptureCVDual(cam)
+    elif (camera_type == CAMERA_TYPE_OPENCV_IMAGE): # Read left and right from image
+        camL = StereoCapture.CVImageCapture("pyStereo3D/SampleData/deimos_left.png")
+        camR = StereoCapture.CVImageCapture("pyStereo3D/SampleData/deimos_right.png")
+        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
+    elif (camera_type == CAMERA_TYPE_OPENCV_IMAGE_RECT): # Read left and right from image
+        camL = StereoCapture.CVImageCapture("pyStereo3D/SampleData/phobos_rect_left.png")
+        camR = StereoCapture.CVImageCapture("pyStereo3D/SampleData/phobos_rect_right.png")
+        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
+    elif (camera_type == CAMERA_TYPE_OPENCV_FOLDER): # Read left and right from images in folders (MUST be in seperate folders)
+        camL = StereoCapture.CVImageFolderCapture("pyStereo3D/SampleData/phobos_left/")
+        camR = StereoCapture.CVImageFolderCapture("pyStereo3D/SampleData/phobos_right/")
+        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
+    else:
+        print("Invalid camera type.")
+        exit()
+
+    # load stereo camera into generic stereo camera capture class
+    stcap = StereoCapture.StereoCapture(stcam)
 
     # define inout folder
     folder = "pyStereo3D/SampleData/"
     # define calibration files for left and right image
-    left_cal_file = folder + "left.yaml"
-    right_cal_file = folder + "right.yaml"
-    
-    s3D = Stereo3D(left_cal_file,right_cal_file,stcam)
-    s3D.run(folder)
+    left_cal_file = folder + "phobos_left.yaml"
+    right_cal_file = folder + "phobos_right.yaml"
+
+    # setup Stereo3D
+    s3D = Stereo3D(left_cal_file,right_cal_file,stcap)
+    # run Stereo3D GUI for generating 3D
+    s3D.run(folder,True)
