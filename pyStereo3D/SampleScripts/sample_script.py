@@ -16,7 +16,7 @@ elif (camera_type == CAMERA_TYPE_PYLON):
 elif (camera_type == CAMERA_TYPE_DEIMOS):
     stcap = StereoCapture("Deimos",0)
 elif (camera_type == CAMERA_TYPE_IMAGE):
-    stcap = StereoCapture("Image",["data/left.png","data/right.png"])
+    stcap = StereoCapture("Image",["pyStereo3D/SampleData/deimos_left.png","pyStereo3D/SampleData/deimos_right.png"])
 else:
     print("Invalid camera type.")
     exit()
