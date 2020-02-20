@@ -1,4 +1,4 @@
-import StereoCapture
+from StereoCapture import StereoCapture
 import numpy as np
 import cv2
 import os
@@ -235,20 +235,6 @@ class Stereo3D():
         else:
             return False, None
 
-    def save_images(self, image_left, image_right, defaultSaveFolder="", left_file_string="left.png", right_file_string="right.png"):
-        # prompt user for save location
-        resp = prompt(text='Saving image pair to path: ', title='Save Image Pair' , default=defaultSaveFolder)
-        if (resp is not None):
-            # define name of output images
-            left_image_filename = resp + left_file_string
-            right_image_filename = resp + right_file_string
-
-            print("Saving stereo image pair...")
-            cv2.imwrite(left_image_filename,image_left)
-            cv2.imwrite(right_image_filename,image_right)
-            print("Stereo image pair saved")
-            alert('Stereo image pair saved.', 'Save Image Pair')
-
     def save_point_cloud(self, disparity, image, defaultSaveFolder="", points_file_string="output.ply"):
         # prompt user for save location
         resp = prompt(text='Saving 3D Point Cloud to path: ', title='Save 3D Point Cloud' , default=defaultSaveFolder)
@@ -279,12 +265,12 @@ class Stereo3D():
                 elif k == ord('s'): # save stereo image pair
                     left_file_string=str(save_index)+"_l.png"
                     right_file_string=str(save_index)+"_r.png"
-                    self.save_images(self.image_left,self.image_right,defaultSaveFolder,left_file_string,right_file_string)
+                    self.stereo_camera.save_images(self.image_left,self.image_right,defaultSaveFolder,left_file_string,right_file_string)
                     save_index += 1
                 elif k == ord('r'): # save rectified stereo image pair
                     left_file_string="rect_"+str(save_index)+"_l.png"
                     right_file_string="rect_"+str(save_index)+"_r.png"
-                    self.save_images(self.rect_image_left,self.rect_image_right,defaultSaveFolder,left_file_string,right_file_string)
+                    self.stereo_camera.save_images(self.rect_image_left,self.rect_image_right,defaultSaveFolder,left_file_string,right_file_string)
                     save_index += 1
                 elif k == ord('p'): # save 3D data as point cloud
                     points_file_string = "points_"+str(save_index)+".ply"
@@ -299,62 +285,33 @@ class Stereo3D():
             print("Failed to calibration files so cannot continue.")
 
 if __name__ == "__main__":
-    # define camera capture types
-    CAMERA_TYPE_PYLON = 0
-    CAMERA_TYPE_IC = 1
-    CAMERA_TYPE_OPENCV_SPLIT = 2
-    CAMERA_TYPE_OPENCV_DUAL = 3
-    CAMERA_TYPE_OPENCV_IMAGE = 4
-    CAMERA_TYPE_OPENCV_IMAGE_RECT = 5
-    CAMERA_TYPE_OPENCV_FOLDER = 5
+    CAMERA_TYPE_PHOBOS = 0
+    CAMERA_TYPE_DEIMOS = 1
+    CAMERA_TYPE_PYLON = 2
+    CAMERA_TYPE_IMAGE = 3
 
-    # select camera capture type
-    camera_type = CAMERA_TYPE_OPENCV_IMAGE_RECT
+    camera_type = CAMERA_TYPE_DEIMOS
 
-    # setup stereo camera
-    stcam = None
-    if (camera_type == CAMERA_TYPE_PYLON): # Pylon camera capture
-        left_camera_serial = "22864917"
-        right_camera_serial = "22864912"
-        camL = StereoCapture.PylonCapture(left_camera_serial)
-        camR = StereoCapture.PylonCapture(right_camera_serial)
-        stcam = StereoCapture.StereoCapturePylon(camL,camR)
-    elif (camera_type == CAMERA_TYPE_IC):  # IC camera capture
-        #TODO ICCapture module is linux only so class not included in the package untill windows support is added
-        pass
-    elif (camera_type == CAMERA_TYPE_OPENCV_SPLIT): # OpenCV
-        camL = StereoCapture.CVCapture(0)
-        camR = StereoCapture.CVCapture(1)
-        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
-    elif (camera_type == CAMERA_TYPE_OPENCV_DUAL): # OpenCV (One camera has left and right stored in red and green channels)
-        cam = StereoCapture.CVCapture(0)
-        stcam = StereoCapture.StereoCaptureCVDual(cam)
-    elif (camera_type == CAMERA_TYPE_OPENCV_IMAGE): # Read left and right from image
-        camL = StereoCapture.CVImageCapture("pyStereo3D/SampleData/deimos_left.png")
-        camR = StereoCapture.CVImageCapture("pyStereo3D/SampleData/deimos_right.png")
-        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
-    elif (camera_type == CAMERA_TYPE_OPENCV_IMAGE_RECT): # Read left and right from image
-        camL = StereoCapture.CVImageCapture("pyStereo3D/SampleData/phobos_rect_left.png")
-        camR = StereoCapture.CVImageCapture("pyStereo3D/SampleData/phobos_rect_right.png")
-        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
-    elif (camera_type == CAMERA_TYPE_OPENCV_FOLDER): # Read left and right from images in folders (MUST be in seperate folders)
-        camL = StereoCapture.CVImageFolderCapture("pyStereo3D/SampleData/phobos_left/")
-        camR = StereoCapture.CVImageFolderCapture("pyStereo3D/SampleData/phobos_right/")
-        stcam = StereoCapture.StereoCaptureCVSplit(camL,camR)
+    stcap = None
+    if (camera_type == CAMERA_TYPE_PHOBOS):
+        stcap = StereoCapture("Phobos",["22864917","22864912"])
+    elif (camera_type == CAMERA_TYPE_PYLON):
+        stcap = StereoCapture("Pylon",["22864917","22864912"])
+    elif (camera_type == CAMERA_TYPE_DEIMOS):
+        stcap = StereoCapture("Deimos",0)
+    elif (camera_type == CAMERA_TYPE_IMAGE):
+        stcap = StereoCapture("Image",["data/left.png","data/right.png"])
     else:
         print("Invalid camera type.")
         exit()
 
-    # load stereo camera into generic stereo camera capture class
-    stcap = StereoCapture.StereoCapture(stcam)
-
     # define inout folder
-    folder = "pyStereo3D/SampleData/"
+    folder = "../SampleData/"
     # define calibration files for left and right image
-    left_cal_file = folder + "phobos_left.yaml"
-    right_cal_file = folder + "phobos_right.yaml"
+    left_cal_file = folder + "deimos_left.yaml"
+    right_cal_file = folder + "deimos_right.yaml"
 
     # setup Stereo3D
     s3D = Stereo3D(left_cal_file,right_cal_file,stcap)
     # run Stereo3D GUI for generating 3D
-    s3D.run(folder,True)
+    s3D.run(folder)
