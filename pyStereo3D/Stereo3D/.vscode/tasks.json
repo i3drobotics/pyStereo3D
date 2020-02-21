@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Python SetupTools Build",
+            "label": "Python: SetupTools: Install twine",
             "type": "shell",
-            "command": "python setup.py sdist bdist_wheel",
+            "command": "${config:python.pythonPath} -m pip install --user --upgrade twine",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -21,9 +21,9 @@
             "problemMatcher": []
         },
         {
-            "label": "Python SetupTools UploadTest",
+            "label": "Python: SetupTools: Build",
             "type": "shell",
-            "command": "python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*",
+            "command": "${config:python.pythonPath} setup.py sdist bdist_wheel",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -38,9 +38,9 @@
             "problemMatcher": []
         },
         {
-            "label": "Python SetupTools Upload",
+            "label": "Python: SetupTools: UploadTest",
             "type": "shell",
-            "command": "python -m twine upload dist/*",
+            "command": "${config:python.pythonPath} -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -55,9 +55,26 @@
             "problemMatcher": []
         },
         {
-            "label": "Python SetupTools Clean",
+            "label": "Python: SetupTools: Upload",
             "type": "shell",
-            "command": "python setup.py clean --all && python setup.py rotate --match=.tar.gz,.whl,.egg,.egg-info --keep=0",
+            "command": "${config:python.pythonPath} -m twine upload dist/*",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Python: SetupTools: Clean",
+            "type": "shell",
+            "command": "${config:python.pythonPath} setup.py clean --all && ${config:python.pythonPath} setup.py rotate --match=.tar.gz,.whl,.egg,.egg-info --keep=0",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

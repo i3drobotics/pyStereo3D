@@ -1,4 +1,4 @@
-from StereoCapture import StereoCapture
+from Stereo3D.StereoCapture import StereoCapture
 from Stereo3D.StereoCalibration import StereoCalibration
 import numpy as np
 import cv2
@@ -224,38 +224,38 @@ class Stereo3D():
         while(True):
             # grab 3D disparity from stereo camera
             res, disp = self.grab3D(isRectified)
+            if res:
+                # prepare images for displaying
+                display_image = np.zeros((640, 480), np.uint8)
 
-            # prepare images for displaying
-            display_image = np.zeros((640, 480), np.uint8)
+                rect_image_left_resized = self.stereo_camera.image_resize(self.rect_image_left, height=640)
+                rect_image_right_resized = self.stereo_camera.image_resize(self.rect_image_right, height=640)
 
-            rect_image_left_resized = self.stereo_camera.image_resize(self.rect_image_left, height=640)
-            rect_image_right_resized = self.stereo_camera.image_resize(self.rect_image_right, height=640)
+                disp_resized = self.scale_disparity(self.stereo_camera.image_resize(disp, height=640))
+                left_right_dual = np.concatenate((rect_image_left_resized, rect_image_right_resized), axis=1)
 
-            disp_resized = self.scale_disparity(self.stereo_camera.image_resize(disp, height=640))
-            left_right_dual = np.concatenate((rect_image_left_resized, rect_image_right_resized), axis=1)
+                (lr_dual_h,lr_dual_w) = left_right_dual.shape
+                (d_h,d_w) = disp_resized.shape
 
-            (lr_dual_h,lr_dual_w) = left_right_dual.shape
-            (d_h,d_w) = disp_resized.shape
+                spacer_width_raw = (lr_dual_w - d_w)
+                if (spacer_width_raw % 2) == 0:
+                    #even
+                    spacer_width_1 = int((spacer_width_raw / 2))
+                    spacer_width_2 = int((spacer_width_raw / 2))
+                else:
+                    #odd
+                    spacer_width_1 = int((spacer_width_raw / 2))
+                    spacer_width_2 = int((spacer_width_raw / 2) + 1)
 
-            spacer_width_raw = (lr_dual_w - d_w)
-            if (spacer_width_raw % 2) == 0:
-                #even
-                spacer_width_1 = int((spacer_width_raw / 2))
-                spacer_width_2 = int((spacer_width_raw / 2))
-            else:
-                #odd
-                spacer_width_1 = int((spacer_width_raw / 2))
-                spacer_width_2 = int((spacer_width_raw / 2) + 1)
+                disp_spacer_1 = np.zeros((640, spacer_width_1), np.uint8)
+                disp_spacer_2 = np.zeros((640, spacer_width_2), np.uint8)
+                disp_spaced = np.concatenate((disp_spacer_1, disp_resized, disp_spacer_2), axis=1)
 
-            disp_spacer_1 = np.zeros((640, spacer_width_1), np.uint8)
-            disp_spacer_2 = np.zeros((640, spacer_width_2), np.uint8)
-            disp_spaced = np.concatenate((disp_spacer_1, disp_resized, disp_spacer_2), axis=1)
-
-            display_image = np.concatenate((disp_spaced, left_right_dual), axis=0)
-            display_image_resize = self.stereo_camera.image_resize(display_image, height=640)
-            
-            # display disparity with stereo images
-            cv2.imshow(self.cv_window_name_Images, display_image_resize)
+                display_image = np.concatenate((disp_spaced, left_right_dual), axis=0)
+                display_image_resize = self.stereo_camera.image_resize(display_image, height=640)
+                
+                # display disparity with stereo images
+                cv2.imshow(self.cv_window_name_Images, display_image_resize)
 
             k = cv2.waitKey(1)          
             if k == ord('q'): # exit if 'q' key pressed
@@ -283,77 +283,3 @@ class Stereo3D():
             if cv2.getWindowProperty(self.cv_window_name_Controls,cv2.WND_PROP_VISIBLE) < 1:        
                 break
             time.sleep(frame_delay)
-
-if __name__ == "__main__":
-    CAMERA_TYPE_PHOBOS = 0
-    CAMERA_TYPE_DEIMOS = 1
-    CAMERA_TYPE_PYLON = 2
-    CAMERA_TYPE_IMAGE = 3
-
-    camera_type = CAMERA_TYPE_DEIMOS
-
-    stcap = None
-    camera_name = None
-    if (camera_type == CAMERA_TYPE_PHOBOS):
-        camera_name = "phobos"
-        stcap = StereoCapture("Phobos",["22864917","22864912"])
-    elif (camera_type == CAMERA_TYPE_PYLON):
-        stcap = StereoCapture("Pylon",["22864917","22864912"])
-    elif (camera_type == CAMERA_TYPE_DEIMOS):
-        camera_name = "deimos"
-        stcap = StereoCapture("Deimos",0)
-    elif (camera_type == CAMERA_TYPE_IMAGE):
-        camera_name = "deimos"
-        stcap = StereoCapture("Image",["../SampleData/deimos_left.png","../SampleData/deimos_right.png"])
-    else:
-        print("Invalid camera type.")
-        exit()
-
-    # define inout folder
-    folder = "../SampleData/"
-
-    CAL_MODE_FROM_IMAGES = 0
-    CAL_MODE_FROM_YAML = 1
-    CAL_MODE_FROM_XML = 2
-
-    stcal = None
-    cal_mode = CAL_MODE_FROM_XML
-    if (cal_mode == CAL_MODE_FROM_IMAGES):
-        # define calibration directories
-        left_images_folder = folder + "deimos_cal/"
-        right_images_folder = folder + "deimos_cal/"
-        output_folder = folder + "deimos_cal/"
-        left_wildcard = "*_l.png"
-        right_wildcard = "*_r.png"
-        grid_size = 39.0
-        grid_rows = 6
-        grid_cols = 8
-        # generate calibration from images
-        stcal = StereoCalibration()
-        stcal.calibrate(
-            left_images_folder,right_images_folder,
-            output_folder,left_wildcard,right_wildcard,
-            grid_size, grid_rows, grid_cols
-        )
-    elif (cal_mode == CAL_MODE_FROM_YAML):
-        # define calibration files for left and right image
-        left_cal_file = folder + camera_name +"_left.yaml"
-        right_cal_file = folder + camera_name +"_right.yaml"
-        # get calibration from yaml files
-        stcal = StereoCalibration()
-        stcal.get_cal_from_yaml(left_cal_file,right_cal_file)
-    elif (cal_mode == CAL_MODE_FROM_XML):
-        # define calibration files for left and right image
-        left_cal_file = folder + camera_name +"_left_calibration.xml"
-        right_cal_file = folder + camera_name +"_right_calibration.xml"
-        stereo_cal_file = folder + camera_name +"_stereo_calibration.xml"
-        left_rect_file = folder + camera_name +"_left_rectification.xml"
-        right_rect_file = folder + camera_name +"_right_rectification.xml"
-        # get calibration from yaml files
-        stcal = StereoCalibration()
-        stcal.get_cal_from_xml(left_cal_file,right_cal_file,stereo_cal_file,left_rect_file,right_rect_file)
-
-    # setup Stereo3D
-    s3D = Stereo3D(stcap,stcal,"BM")
-    # run Stereo3D GUI for generating 3D
-    s3D.run(folder)

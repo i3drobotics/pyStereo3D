@@ -1,5 +1,4 @@
-from Stereo3D import Stereo3D, StereoCalibration
-from StereoCapture import StereoCapture
+from Stereo3D import Stereo3D, StereoCapture, StereoCalibration
 
 CAMERA_TYPE_PHOBOS = 0
 CAMERA_TYPE_DEIMOS = 1
@@ -20,20 +19,20 @@ elif (camera_type == CAMERA_TYPE_DEIMOS):
     stcap = StereoCapture("Deimos",0)
 elif (camera_type == CAMERA_TYPE_IMAGE):
     camera_name = "deimos"
-    stcap = StereoCapture("Image",["pyStereo3D/SampleData/deimos_left.png","SampleData/deimos_right.png"])
+    stcap = StereoCapture("Image",["SampleData/deimos_left.png","SampleData/deimos_right.png"])
 else:
     print("Invalid camera type.")
     exit()
 
 # define inout folder
-folder = "pyStereo3D/SampleData/"
+folder = "SampleData/"
 
 CAL_MODE_FROM_IMAGES = 0
 CAL_MODE_FROM_YAML = 1
 CAL_MODE_FROM_XML = 2
 
 stcal = None
-cal_mode = CAL_MODE_FROM_XML
+cal_mode = CAL_MODE_FROM_YAML
 if (cal_mode == CAL_MODE_FROM_IMAGES):
     # define calibration directories
     left_images_folder = folder + "deimos_cal/"

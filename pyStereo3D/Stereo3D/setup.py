@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="Stereo3D",
-    version="0.0.1.11",
+    version="0.0.1.12.1",
     author="Ben Knight",
     author_email="bknight@i3drobotics.com",
     description="Generating 3D data from stereo images.",
@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/i3drobotics/Stereo3D",
     packages=setuptools.find_packages(),
     install_requires=[
-        'stereocapture'
+        'numpy','opencv-python','pymsgbox','pypylon'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

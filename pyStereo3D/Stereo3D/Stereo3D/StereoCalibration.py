@@ -311,11 +311,11 @@ class StereoCalibration():
 
     def rectify_pair(self,image_left,image_right):
         image_l_rect = self.rectify(image_left,self.stereo_cal["left"])
-        image_r_rect = self.rectify(image_left,self.stereo_cal["right"])
+        image_r_rect = self.rectify(image_right,self.stereo_cal["right"])
         return image_l_rect, image_r_rect
 
     def rectify(self,image,camera_cal):
-        if (not "map1" in camera_cal or not "map2" in camera_cal):
+        if (camera_cal["map1"] is None or camera_cal["map2"] is None):
             # create rectification maps if not read from calibration file
             map1, map2 = cv2.initUndistortRectifyMap(
                 camera_cal["m"], camera_cal["d"], camera_cal["r"], camera_cal["p"], 
@@ -325,5 +325,5 @@ class StereoCalibration():
         else:
             map1 = camera_cal["map1"]
             map2 = camera_cal["map2"]
-        rect_image = cv2.remap(image, map1, map2, cv2.INTER_LINEAR)
+        rect_image = cv2.remap(image, map1, map2, cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT)
         return rect_image
