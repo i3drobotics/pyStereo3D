@@ -19,7 +19,7 @@
                 "command": "cd ${workspaceFolder}/Dep/pylon-5.2.0.13457-x86_64 && sudo tar -C /opt -xzf pylonSDK-5.2.0.13457-x86_64.tar.gz && ./setup-usb.sh",
             },
             "problemMatcher":[]
-        }
+        },
         {
             "label": "Python: Install PyPylon",
             "type": "shell",

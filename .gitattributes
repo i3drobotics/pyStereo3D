@@ -1,0 +1,1 @@
+*Basler_pylon_*.exe filter=lfs diff=lfs merge=lfs -text

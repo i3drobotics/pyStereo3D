@@ -1,0 +1,58 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMAKE: Build: libStereo3D",
+            "type": "shell",
+            "command": "cmake .. && make",
+            "options": {
+                "cwd": "${workspaceFolder}/Stereo3D/build"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "CMAKE: Install: libStereo3D",
+            "type": "shell",
+            "command": "make install",
+            "options": {
+                "cwd": "${workspaceFolder}/Stereo3D/build"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "CMAKE: Build: examples",
+            "type": "shell",
+            "command": "cmake .. && make",
+            "options": {
+                "cwd": "${workspaceFolder}/example_external/build"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+    ]
+}
