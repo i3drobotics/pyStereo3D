@@ -1,2 +1,4 @@
 *.vscode/settings.json
 /pyStereo3D/Stereo3D/.vscode/settings.json
+cppStereo3D/Stereo3D/build/*
+cppStereo3D/example_external/build/*
