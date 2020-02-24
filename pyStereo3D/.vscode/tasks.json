@@ -13,10 +13,10 @@
             "label": "Python: Install Pylon",
             "type": "shell",
             "windows": {
-                "command": "${workspaceFolder}/Dep/Basler_pylon_6.0.1.18259.exe",
+                "command": "${workspaceFolder}/../Dep/Basler_pylon_6.0.1.18259.exe",
             },
             "linux": {
-                "command": "cd ${workspaceFolder}/Dep/pylon-5.2.0.13457-x86_64 && sudo tar -C /opt -xzf pylonSDK-5.2.0.13457-x86_64.tar.gz && ./setup-usb.sh",
+                "command": "cd ${workspaceFolder}/../Dep/pylon-5.2.0.13457-x86_64 && sudo tar -C /opt -xzf pylonSDK-5.2.0.13457-x86_64.tar.gz && ./setup-usb.sh",
             },
             "problemMatcher":[]
         },
