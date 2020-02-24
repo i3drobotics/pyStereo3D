@@ -19,13 +19,13 @@ elif (camera_type == CAMERA_TYPE_DEIMOS):
     stcap = StereoCapture("Deimos",0)
 elif (camera_type == CAMERA_TYPE_IMAGE):
     camera_name = "deimos"
-    stcap = StereoCapture("Image",["../SampleData/deimos_left.png","../SampleData/deimos_right.png"])
+    stcap = StereoCapture("Image",["../../SampleData/deimos_left.png","../../SampleData/deimos_right.png"])
 else:
     print("Invalid camera type.")
     exit()
 
 # define inout folder
-folder = "../SampleData/"
+folder = "../../SampleData/"
 
 CAL_MODE_FROM_IMAGES = 0
 CAL_MODE_FROM_YAML = 1
