@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(stereo3d VERSION 1.0.0 LANGUAGES CXX)
 
-option(ENABLE_EXAMPLES "ENABLE_TESTS" OFF)
+option(ENABLE_EXAMPLES "ENABLE_EXAMPLES" OFF)
 
 find_package( OpenCV REQUIRED )
 
@@ -40,10 +40,10 @@ install(
 
 if (ENABLE_EXAMPLES)
 
-  add_executable(example_internal example_internal/example.cpp)
-  target_link_libraries( example_internal PUBLIC stereo3d)
+  add_executable(Stereo3D_example_internal example_internal/example.cpp)
+  target_link_libraries( Stereo3D_example_internal PUBLIC stereo3d)
 
-  install(TARGETS example_internal DESTINATION bin)
+  install(TARGETS Stereo3D_example_internal DESTINATION bin)
 
 endif ()
 
