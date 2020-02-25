@@ -32,6 +32,13 @@
             "command": "sudo make uninstall",
             "options": {"cwd": "${workspaceFolder}/Stereo3D/build/"},
             "problemMatcher":[],
-        }
+        },
+        {
+            "label": "C++: Build: installer",
+            "type": "shell",
+            "command": "sudo cpack",
+            "options": {"cwd": "${workspaceFolder}/Stereo3D/build/"},
+            "problemMatcher":[],
+        },
     ]
 }
