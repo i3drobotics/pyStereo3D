@@ -2,6 +2,16 @@ cmake_minimum_required(VERSION 3.5)
 
 project(example_external VERSION 0.0.1 LANGUAGES CXX)
 
+find_package(OpenCV 4.2.0 EXACT REQUIRED PATHS /home/i3dr/I3DPackages/Stereo3D/cppStereo3D/Dep/opencv)
+find_package(PCL REQUIRED)
+
+include_directories(
+    ${PCL_INCLUDE_DIRS} 
+    ${OpenCV_INCLUDE_DIRS}
+    )
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 find_package(stereo3d CONFIG REQUIRED)
 
 add_executable(stereo3d_example_external example.cpp)

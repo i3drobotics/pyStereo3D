@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
 project(stereo3d VERSION 1.0.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 option(ENABLE_EXAMPLES "ENABLE_EXAMPLES" OFF)
 
-find_package( OpenCV REQUIRED )
+find_package(OpenCV 4.2.0 EXACT REQUIRED PATHS /home/i3dr/I3DPackages/Stereo3D/cppStereo3D/Dep/opencv)
+find_package(PCL REQUIRED)
 
 add_library(stereo3d SHARED
   src/Stereo3D.cpp
@@ -11,12 +14,16 @@ add_library(stereo3d SHARED
 
 include(GNUInstallDirs)
 
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 target_include_directories(
   stereo3d PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-target_link_libraries( stereo3d ${OpenCV_LIBS} )
+target_link_libraries( stereo3d ${OpenCV_LIBS} ${PCL_LIBRARIES})
 
 target_compile_definitions(
   stereo3d PRIVATE -D_EXPORT
