@@ -190,8 +190,8 @@ class StereoCapture():
             while(True):
                 res,in_image_left,in_image_right = self.stcam.grab()
                 if (res):
-                    image_right = in_image_left
-                    image_left = in_image_right
+                    image_right = in_image_right
+                    image_left = in_image_left
                     stereo_image = np.concatenate((image_left, image_right), axis=1)
                     stereo_image_resized = self.image_resize(stereo_image,1280)
                     cv2.imshow('Stereo Image', stereo_image_resized)
