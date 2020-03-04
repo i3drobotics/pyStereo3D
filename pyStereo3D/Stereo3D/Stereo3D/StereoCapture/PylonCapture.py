@@ -50,13 +50,17 @@ class PylonCapture():
 
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateDevice(device))
 
+        #TODO fix pypylon problem where settings are reset on startup (previous settings are wiped)
         self.camera.Open()
+
         if (self.trigger_mode is not None):
+            print("Trigger mode: {}".format(self.trigger_mode))
             if (self.trigger_mode):
                 self.camera.GetNodeMap().GetNode("TriggerMode").SetValue("On")
             else:
                 self.camera.GetNodeMap().GetNode("TriggerMode").SetValue("Off")
         if (self.max_buffer is not None):
+            print("Max buffer: {}".format(self.max_buffer))
             self.camera.MaxNumBuffer.SetValue(self.max_buffer)
         # TODO set exposure and gain in functions
         #self.camera.GetNodeMap().GetNode("ExposureAuto").SetValue("Off")
@@ -64,19 +68,23 @@ class PylonCapture():
         #self.camera.GetNodeMap().GetNode("GainAuto").SetValue("Off")
         #self.camera.GetNodeMap().GetNode("GainRaw").SetValue(0)
         if (self.pixel_format is not None):
+            print("Pixel format: {}".format(self.pixel_format))
             self.camera.GetNodeMap().GetNode("PixelFormat").SetValue(self.pixel_format)
         #self.camera.GetNodeMap().GetNode("Width").SetValue(2448)
         #self.camera.GetNodeMap().GetNode("Height").SetValue(2048)
         if (self.packet_size is not None):
+            print("Packet size: {}".format(self.packet_size))
             self.camera.GetNodeMap().GetNode("GevSCPSPacketSize").SetValue(self.packet_size)
         if (self.inter_packet_delay is not None):
+            print("Inter packet delay: {}".format(self.inter_packet_delay))
             self.camera.GetNodeMap().GetNode("GevSCPD").SetValue(self.inter_packet_delay)
         if (self.binning is not None):
+            print("Binning: {}".format(self.binning))
             self.camera.GetNodeMap().GetNode("BinningHorizontalMode").SetValue("Average")
             self.camera.GetNodeMap().GetNode("BinningHorizontal").SetValue(self.binning)
             self.camera.GetNodeMap().GetNode("BinningVerticalMode").SetValue("Average")
             self.camera.GetNodeMap().GetNode("BinningVertical").SetValue(self.binning)
-        self.camera.Close()
+
         self.camera.StartGrabbing()
 
         self.converter = pylon.ImageFormatConverter()
