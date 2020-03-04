@@ -215,7 +215,8 @@ class Stereo3D():
             # write 3D data to ply with color from image on points
             self.write_ply(ply_filename,disparity,depth,image)
             print("Point cloud save complete.")
-            alert('3D point cloud saved.', 'Save 3D Point Cloud')
+            if (confirm_folder):
+                alert('3D point cloud saved.', 'Save 3D Point Cloud')
         else:
             print("invalid prompt response or disparity/image is empty")
 

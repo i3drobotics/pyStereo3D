@@ -131,7 +131,8 @@ class StereoCapture():
             cv2.imwrite(left_image_filename,image_left)
             cv2.imwrite(right_image_filename,image_right)
             print("Stereo image pair saved")
-            alert('Stereo image pair saved.', 'Save Image Pair')
+            if (confirm_folder):
+                alert('Stereo image pair saved.', 'Save Image Pair')
         else:
             print("Invalid prompt response or images are empty")
 
