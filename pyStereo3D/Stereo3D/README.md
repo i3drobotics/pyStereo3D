@@ -3,16 +3,14 @@ Python package for generating 3D data from stereo cameras and images.
 
 ## Install
 **Install python**  
-***NOTE***: Only tested using Python3.6
 [Windows]  
-Download the latest windows release of python3.6 [here](https://www.python.org/downloads/release/python-368/)  
+Download and install the latest windows release of python3 [here](https://www.python.org/downloads/release/python-368/)  
 [Linux]
-***WARNING***: Python3.6-dev is required for pypylon to work in Ubuntu16.04
+Download and install the latest linux release of python3 and python3-tk
 ```
-sudo apt install software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
-sudo apt install python3.6-dev
+sudo apt install python3
+sudo apt install python3-tk
 ```
 
 **Install Pylon**  
@@ -28,6 +26,7 @@ Install wheel:
 ```
 python -m pip install pypylon-1.5.1-cp36-cp36m-OS.whl 
 ```
+
 **Install Stereo3D**
 ```
 python -m pip install stereo3d
