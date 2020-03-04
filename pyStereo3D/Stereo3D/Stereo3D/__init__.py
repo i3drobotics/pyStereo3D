@@ -204,7 +204,7 @@ class Stereo3D():
     def save_point_cloud(self, disparity, image, defaultSaveFolder="", points_file_string="output.ply", confirm_folder=True):
         # prompt user for save location
         resp = prompt(text='Saving 3D Point Cloud to path: ', title='Save 3D Point Cloud' , default=defaultSaveFolder)
-        if (resp is not None):
+        if (resp is not None and disparity is not None and image is not None):
             # define name of output point cloud ply file
             ply_filename = resp + points_file_string
 
@@ -216,6 +216,8 @@ class Stereo3D():
             self.write_ply(ply_filename,disparity,depth,image)
             print("Point cloud save complete.")
             alert('3D point cloud saved.', 'Save 3D Point Cloud')
+        else:
+            print("invalid prompt response or disparity/image is empty")
 
     def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0,confirm_folder=True):
         # connect to stereo camera

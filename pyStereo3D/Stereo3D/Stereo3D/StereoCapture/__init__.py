@@ -122,7 +122,7 @@ class StereoCapture():
             resp = prompt(text='Saving image pair to path: ', title='Save Image Pair' , default=defaultSaveFolder)
         else:
             resp = defaultSaveFolder
-        if (resp is not None):
+        if (resp is not None and image_left is not None and image_right is not None):
             # define name of output images
             left_image_filename = resp + left_file_string
             right_image_filename = resp + right_file_string
@@ -132,6 +132,8 @@ class StereoCapture():
             cv2.imwrite(right_image_filename,image_right)
             print("Stereo image pair saved")
             alert('Stereo image pair saved.', 'Save Image Pair')
+        else:
+            print("Invalid prompt response or images are empty")
 
     def image_resize(self, image, width = None, height = None, inter = cv2.INTER_AREA):
         """
@@ -179,12 +181,16 @@ class StereoCapture():
         """
         Display GUI for viewing stereo camera feed
         """
+        image_right = None
+        image_left = None
         if (self.stcam is not None):
             self.connect()
             save_index = 0
             while(True):
-                res,image_left,image_right = self.stcam.grab()
+                res,in_image_left,in_image_right = self.stcam.grab()
                 if (res):
+                    image_right = in_image_left
+                    image_left = in_image_right
                     stereo_image = np.concatenate((image_left, image_right), axis=1)
                     stereo_image_resized = self.image_resize(stereo_image,1280)
                     cv2.imshow('Stereo Image', stereo_image_resized)
