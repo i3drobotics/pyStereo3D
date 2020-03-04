@@ -51,27 +51,27 @@ class PylonCapture():
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateDevice(device))
 
         self.camera.Open()
-        if (not self.trigger_mode is None):
+        if (self.trigger_mode is not None):
             if (self.trigger_mode):
                 self.camera.GetNodeMap().GetNode("TriggerMode").SetValue("On")
             else:
                 self.camera.GetNodeMap().GetNode("TriggerMode").SetValue("Off")
-        if (not self.max_buffer is None):
+        if (self.max_buffer is not None):
             self.camera.MaxNumBuffer.SetValue(self.max_buffer)
         # TODO set exposure and gain in functions
         #self.camera.GetNodeMap().GetNode("ExposureAuto").SetValue("Off")
         #self.camera.GetNodeMap().GetNode("ExposureTimeRaw").SetValue(15000)
         #self.camera.GetNodeMap().GetNode("GainAuto").SetValue("Off")
         #self.camera.GetNodeMap().GetNode("GainRaw").SetValue(0)
-        if (not self.pixel_format is None):
+        if (self.pixel_format is not None):
             self.camera.GetNodeMap().GetNode("PixelFormat").SetValue(self.pixel_format)
         #self.camera.GetNodeMap().GetNode("Width").SetValue(2448)
         #self.camera.GetNodeMap().GetNode("Height").SetValue(2048)
-        if (not self.packet_size is None):
+        if (self.packet_size is not None):
             self.camera.GetNodeMap().GetNode("GevSCPSPacketSize").SetValue(self.packet_size)
-        if (not self.inter_packet_delay is None):
+        if (self.inter_packet_delay is not None):
             self.camera.GetNodeMap().GetNode("GevSCPD").SetValue(self.inter_packet_delay)
-        if (not self.binning is None):
+        if (self.binning is not None):
             self.camera.GetNodeMap().GetNode("BinningHorizontalMode").SetValue("Average")
             self.camera.GetNodeMap().GetNode("BinningHorizontal").SetValue(self.binning)
             self.camera.GetNodeMap().GetNode("BinningVerticalMode").SetValue("Average")

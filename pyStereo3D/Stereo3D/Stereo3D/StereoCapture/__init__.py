@@ -43,8 +43,8 @@ class StereoCapture():
             if (param is not None):
                 left_camera_serial = param[0]
                 right_camera_serial = param[1]
-                camL = PylonCapture(left_camera_serial,max_buffer=16)
-                camR = PylonCapture(right_camera_serial,max_buffer=16)
+                camL = PylonCapture(left_camera_serial)
+                camR = PylonCapture(right_camera_serial)
                 stcam = StereoCapturePylon(camL,camR)
             else:
                 print("param MUST be defined when using pre-made stereo capture object. (Array)[Left_serial,Right_serial]")
