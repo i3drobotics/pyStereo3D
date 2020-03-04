@@ -201,7 +201,7 @@ class Stereo3D():
         else:
             return False, None
 
-    def save_point_cloud(self, disparity, image, defaultSaveFolder="", points_file_string="output.ply"):
+    def save_point_cloud(self, disparity, image, defaultSaveFolder="", points_file_string="output.ply", confirm_folder=True):
         # prompt user for save location
         resp = prompt(text='Saving 3D Point Cloud to path: ', title='Save 3D Point Cloud' , default=defaultSaveFolder)
         if (resp is not None):
@@ -217,7 +217,7 @@ class Stereo3D():
             print("Point cloud save complete.")
             alert('3D point cloud saved.', 'Save 3D Point Cloud')
 
-    def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0):
+    def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0,confirm_folder=True):
         # connect to stereo camera
         self.connect()
         save_index = 0
@@ -263,16 +263,16 @@ class Stereo3D():
             elif k == ord('s'): # save stereo image pair
                 left_file_string=str(save_index)+"_l.png"
                 right_file_string=str(save_index)+"_r.png"
-                self.stereo_camera.save_images(self.image_left,self.image_right,defaultSaveFolder,left_file_string,right_file_string)
+                self.stereo_camera.save_images(self.image_left,self.image_right,defaultSaveFolder,left_file_string,right_file_string,confirm_folder)
                 save_index += 1
             elif k == ord('r'): # save rectified stereo image pair
                 left_file_string="rect_"+str(save_index)+"_l.png"
                 right_file_string="rect_"+str(save_index)+"_r.png"
-                self.stereo_camera.save_images(self.rect_image_left,self.rect_image_right,defaultSaveFolder,left_file_string,right_file_string)
+                self.stereo_camera.save_images(self.rect_image_left,self.rect_image_right,defaultSaveFolder,left_file_string,right_file_string,confirm_folder)
                 save_index += 1
             elif k == ord('p'): # save 3D data as point cloud
                 points_file_string = "points_"+str(save_index)+".ply"
-                self.save_point_cloud(disp,self.rect_image_left,defaultSaveFolder,points_file_string)
+                self.save_point_cloud(disp,self.rect_image_left,defaultSaveFolder,points_file_string,confirm_folder)
                 save_index += 1
             elif k == ord('1'): # change tp OpenCV BM
                 self.change_matcher("BM")

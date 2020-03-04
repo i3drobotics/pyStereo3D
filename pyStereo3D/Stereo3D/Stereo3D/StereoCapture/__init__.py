@@ -103,7 +103,7 @@ class StereoCapture():
         flipImage = cv2.flip(image, 0)
         return flipImage
 
-    def save_images(self, image_left, image_right, defaultSaveFolder="", left_file_string="left.png", right_file_string="right.png"):
+    def save_images(self, image_left, image_right, defaultSaveFolder="", left_file_string="left.png", right_file_string="right.png", confirm_folder=True):
         """
         Save stereo images to files
         :param image_left: left camera image matrix
@@ -118,7 +118,10 @@ class StereoCapture():
         :type right_file_string: string
         """
         # prompt user for save location
-        resp = prompt(text='Saving image pair to path: ', title='Save Image Pair' , default=defaultSaveFolder)
+        if (confirm_folder):
+            resp = prompt(text='Saving image pair to path: ', title='Save Image Pair' , default=defaultSaveFolder)
+        else:
+            resp = defaultSaveFolder
         if (resp is not None):
             # define name of output images
             left_image_filename = resp + left_file_string
@@ -172,7 +175,7 @@ class StereoCapture():
         # return the resized image
         return resized
 
-    def runGui(self,defaultSaveFolder=""):
+    def runGui(self,defaultSaveFolder="",confirm_folder=True):
         """
         Display GUI for viewing stereo camera feed
         """
@@ -191,7 +194,7 @@ class StereoCapture():
                 elif k == ord('s'): # save stereo image pair
                     left_file_string=str(save_index)+"_l.png"
                     right_file_string=str(save_index)+"_r.png"
-                    self.save_images(image_left,image_right,defaultSaveFolder,left_file_string,right_file_string)
+                    self.save_images(image_left,image_right,defaultSaveFolder,left_file_string,right_file_string,confirm_folder)
                     save_index += 1
             self.stcam.close()
         else:
