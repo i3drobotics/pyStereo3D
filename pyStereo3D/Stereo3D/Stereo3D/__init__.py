@@ -33,6 +33,12 @@ class Stereo3D():
         self.disparity = None
         self.depth = None
 
+        self.EXIT_CODE_QUIT = -1
+        self.EXIT_CODE_GRAB_3D_SUCCESS = 1
+        self.EXIT_CODE_FAILED_TO_GRAB_3D = -2
+
+        self.save_index = 0
+
         self.cv_window_name_Controls = "[Stereo3D] Controls"
         self.cv_window_name_Images = "[Stereo3D] Images"
 
@@ -233,74 +239,82 @@ class Stereo3D():
         else:
             print("invalid prompt response or disparity/image is empty")
 
+    def run_frame(self,defaultSaveFolder="",isRectified=False,confirm_folder=True):
+        # grab 3D disparity from stereo camera
+        res, disp = self.grab3D(isRectified)
+        if res:
+            # prepare images for displaying
+            display_image = np.zeros((640, 480), np.uint8)
+
+            rect_image_left_resized = self.stereo_camera.image_resize(self.rect_image_left, height=640)
+            rect_image_right_resized = self.stereo_camera.image_resize(self.rect_image_right, height=640)
+
+            disp_resized = self.scale_disparity(self.stereo_camera.image_resize(disp, height=640))
+            left_right_dual = np.concatenate((rect_image_left_resized, rect_image_right_resized), axis=1)
+
+            (lr_dual_h,lr_dual_w) = left_right_dual.shape
+            (d_h,d_w) = disp_resized.shape
+
+            spacer_width_raw = (lr_dual_w - d_w)
+            if (spacer_width_raw % 2) == 0:
+                #even
+                spacer_width_1 = int((spacer_width_raw / 2))
+                spacer_width_2 = int((spacer_width_raw / 2))
+            else:
+                #odd
+                spacer_width_1 = int((spacer_width_raw / 2))
+                spacer_width_2 = int((spacer_width_raw / 2) + 1)
+
+            disp_spacer_1 = np.zeros((640, spacer_width_1), np.uint8)
+            disp_spacer_2 = np.zeros((640, spacer_width_2), np.uint8)
+            disp_spaced = np.concatenate((disp_spacer_1, disp_resized, disp_spacer_2), axis=1)
+
+            display_image = np.concatenate((disp_spaced, left_right_dual), axis=0)
+            display_image_resize = self.stereo_camera.image_resize(display_image, height=640)
+            
+            # display disparity with stereo images
+            cv2.imshow(self.cv_window_name_Images, display_image_resize)
+
+        k = cv2.waitKey(1)          
+        if k == ord('q'): # exit if 'q' key pressed
+            return self.EXIT_CODE_QUIT
+        elif k == ord('s'): # save stereo image pair
+            left_file_string=str(self.save_index)+"_l.png"
+            right_file_string=str(self.save_index)+"_r.png"
+            self.stereo_camera.save_images(self.image_left,self.image_right,defaultSaveFolder,left_file_string,right_file_string,confirm_folder)
+            self.save_index += 1
+        elif k == ord('r'): # save rectified stereo image pair
+            left_file_string="rect_"+str(self.save_index)+"_l.png"
+            right_file_string="rect_"+str(self.save_index)+"_r.png"
+            self.stereo_camera.save_images(self.rect_image_left,self.rect_image_right,defaultSaveFolder,left_file_string,right_file_string,confirm_folder)
+            self.save_index += 1
+        elif k == ord('p'): # save 3D data as point cloud
+            points_file_string = "points_"+str(self.save_index)+".ply"
+            self.save_point_cloud(disp,self.rect_image_left,defaultSaveFolder,points_file_string,confirm_folder)
+            self.save_index += 1
+        elif k == ord('1'): # change tp OpenCV BM
+            self.change_matcher("BM")
+        elif k == ord('2'): # change to OpenCV SGBM
+            self.change_matcher("SGBM")
+        if cv2.getWindowProperty(self.cv_window_name_Images,cv2.WND_PROP_VISIBLE) < 1:        
+            return self.EXIT_CODE_QUIT
+        if cv2.getWindowProperty(self.cv_window_name_Controls,cv2.WND_PROP_VISIBLE) < 1:        
+            return self.EXIT_CODE_QUIT
+
+        if res:
+            return self.EXIT_CODE_GRAB_3D_SUCCESS
+        else:
+            return self.EXIT_CODE_FAILED_TO_GRAB_3D
+
     def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0,confirm_folder=True):
         # connect to stereo camera
         connected = False
         while(not connected):
             connected = self.connect()
-        save_index = 0
         while(True):
-            # grab 3D disparity from stereo camera
-            res, disp = self.grab3D(isRectified)
-            if res:
-                # prepare images for displaying
-                display_image = np.zeros((640, 480), np.uint8)
-
-                rect_image_left_resized = self.stereo_camera.image_resize(self.rect_image_left, height=640)
-                rect_image_right_resized = self.stereo_camera.image_resize(self.rect_image_right, height=640)
-
-                disp_resized = self.scale_disparity(self.stereo_camera.image_resize(disp, height=640))
-                left_right_dual = np.concatenate((rect_image_left_resized, rect_image_right_resized), axis=1)
-
-                (lr_dual_h,lr_dual_w) = left_right_dual.shape
-                (d_h,d_w) = disp_resized.shape
-
-                spacer_width_raw = (lr_dual_w - d_w)
-                if (spacer_width_raw % 2) == 0:
-                    #even
-                    spacer_width_1 = int((spacer_width_raw / 2))
-                    spacer_width_2 = int((spacer_width_raw / 2))
-                else:
-                    #odd
-                    spacer_width_1 = int((spacer_width_raw / 2))
-                    spacer_width_2 = int((spacer_width_raw / 2) + 1)
-
-                disp_spacer_1 = np.zeros((640, spacer_width_1), np.uint8)
-                disp_spacer_2 = np.zeros((640, spacer_width_2), np.uint8)
-                disp_spaced = np.concatenate((disp_spacer_1, disp_resized, disp_spacer_2), axis=1)
-
-                display_image = np.concatenate((disp_spaced, left_right_dual), axis=0)
-                display_image_resize = self.stereo_camera.image_resize(display_image, height=640)
-                
-                # display disparity with stereo images
-                cv2.imshow(self.cv_window_name_Images, display_image_resize)
-
-            k = cv2.waitKey(1)          
-            if k == ord('q'): # exit if 'q' key pressed
-                break
-            elif k == ord('s'): # save stereo image pair
-                left_file_string=str(save_index)+"_l.png"
-                right_file_string=str(save_index)+"_r.png"
-                self.stereo_camera.save_images(self.image_left,self.image_right,defaultSaveFolder,left_file_string,right_file_string,confirm_folder)
-                save_index += 1
-            elif k == ord('r'): # save rectified stereo image pair
-                left_file_string="rect_"+str(save_index)+"_l.png"
-                right_file_string="rect_"+str(save_index)+"_r.png"
-                self.stereo_camera.save_images(self.rect_image_left,self.rect_image_right,defaultSaveFolder,left_file_string,right_file_string,confirm_folder)
-                save_index += 1
-            elif k == ord('p'): # save 3D data as point cloud
-                points_file_string = "points_"+str(save_index)+".ply"
-                self.save_point_cloud(disp,self.rect_image_left,defaultSaveFolder,points_file_string,confirm_folder)
-                save_index += 1
-            elif k == ord('1'): # change tp OpenCV BM
-                self.change_matcher("BM")
-            elif k == ord('2'): # change to OpenCV SGBM
-                self.change_matcher("SGBM")
-            if cv2.getWindowProperty(self.cv_window_name_Images,cv2.WND_PROP_VISIBLE) < 1:        
-                break
-            if cv2.getWindowProperty(self.cv_window_name_Controls,cv2.WND_PROP_VISIBLE) < 1:        
+            exit_code = self.run_frame(defaultSaveFolder,isRectified,confirm_folder)
+            if (exit_code == self.EXIT_CODE_QUIT):
                 break
             time.sleep(frame_delay)
         
-        print("Closing camera...")
         self.stereo_camera.close()
