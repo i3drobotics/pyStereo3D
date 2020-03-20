@@ -9,9 +9,11 @@ from Stereo3D.StereoCapture.PylonCapture import PylonCapture
 from Stereo3D.StereoCapture.CVCapture import CVCapture
 from Stereo3D.StereoCapture.CVImageCapture import CVImageCapture
 from Stereo3D.StereoCapture.CVImageFolderCapture import CVImageFolderCapture
+from Stereo3D.StereoCapture.VREPCapture import VREPCapture
 from Stereo3D.StereoCapture.StereoCapturePylon import StereoCapturePylon
 from Stereo3D.StereoCapture.StereoCaptureCVSplit import StereoCaptureCVSplit
 from Stereo3D.StereoCapture.StereoCaptureCVDual import StereoCaptureCVDual
+from Stereo3D.StereoCapture.StereoCaptureVREP import StereoCaptureVREP
 
 from pymsgbox import *
 import numpy as np

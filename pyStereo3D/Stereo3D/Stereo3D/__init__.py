@@ -6,6 +6,8 @@ import os
 import time
 import glob
 from pymsgbox import *
+from pyntcloud import PyntCloud
+import pandas as pd
 
 class Stereo3D():
     
@@ -137,6 +139,9 @@ class Stereo3D():
 
     def write_ply(self,filename, disp, depth, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = np.float32(image)
+        image = image/255
+
         mask = disp > disp.min()
         points = depth[mask]
         image = image[mask]
@@ -144,11 +149,19 @@ class Stereo3D():
         points = points.reshape(-1, 3)
         image = image.reshape(-1, 3)
 
-        points = np.hstack([points, image])
+        points = np.hstack((points, image))
+
+        cloud = PyntCloud(pd.DataFrame(
+            # same arguments that you are passing to visualize_pcl
+            data=points,
+            columns=["x", "y", "z", "red", "green", "blue"]))
         
-        with open(filename, 'wb') as f:
-            f.write((self.ply_header % dict(vert_num=len(points))).encode('utf-8'))
-            np.savetxt(f, points, fmt='%f %f %f %d %d %d ')
+        cloud.to_file(filename)
+        
+        #with open(filename, 'wb') as f:
+        #    f.write((self.ply_header % dict(vert_num=len(points))).encode('utf-8'))
+        #    #np.save(f, points, fmt='%f %f %f %d %d %d ')
+        #    np.savetxt(f, points, fmt='%f %f %f %d %d %d ')
 
     def scale_disparity(self,disparity):
         minV, maxV,_,_ = cv2.minMaxLoc(disparity)
@@ -222,7 +235,9 @@ class Stereo3D():
 
     def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0,confirm_folder=True):
         # connect to stereo camera
-        self.connect()
+        connected = False
+        while(not connected):
+            connected = self.connect()
         save_index = 0
         while(True):
             # grab 3D disparity from stereo camera

@@ -7,7 +7,7 @@ CAMERA_TYPE_PYLON = 2
 CAMERA_TYPE_IMAGE = 3
 CAMERA_TYPE_VREP = 4
 
-camera_type = CAMERA_TYPE_VREP
+camera_type = CAMERA_TYPE_IMAGE
 
 stcap = None
 camera_name = None
