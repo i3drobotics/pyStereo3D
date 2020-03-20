@@ -160,6 +160,10 @@ class VREPVisionSensor:
             print("Failed to connect to VREP")
             return False, None, None
 
+    def close(self):
+        vrep.simxStopSimulation(self.clientID,vrep.simx_opmode_oneshot)
+        vrep.simxFinish(self.clientID)
+
     def run(self):
         self.initalised = False
         res = self.connect()
@@ -170,9 +174,11 @@ class VREPVisionSensor:
                 if (res):
                     self.cv_image = cv_image
                     self.cv_dimage = cv_dimage
+        self.close()
 
     def stop_threaded(self):
         self.running = False
+        self.close()
 
     def run_threaded(self):
         self.thread = threading.Thread(target=self.run)

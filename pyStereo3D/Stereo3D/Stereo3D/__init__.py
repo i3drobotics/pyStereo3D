@@ -301,3 +301,6 @@ class Stereo3D():
             if cv2.getWindowProperty(self.cv_window_name_Controls,cv2.WND_PROP_VISIBLE) < 1:        
                 break
             time.sleep(frame_delay)
+        
+        print("Closing camera...")
+        self.stereo_camera.close()
