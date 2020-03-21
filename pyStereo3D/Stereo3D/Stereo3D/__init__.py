@@ -318,7 +318,6 @@ class Stereo3D():
                 break
             if (exit_code == self.EXIT_CODE_FAILED_TO_GRAB_3D):
                 time.sleep(1)
-            print(self.stereo_camera.stcam.camera.get_last_pose())
             time.sleep(frame_delay)
         
         self.stereo_camera.close()

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="Stereo3D",
-    version="0.0.1.13.15",
+    version="0.0.1.13.16",
     author="Ben Knight",
     author_email="bknight@i3drobotics.com",
     description="Generating 3D data from stereo images.",
