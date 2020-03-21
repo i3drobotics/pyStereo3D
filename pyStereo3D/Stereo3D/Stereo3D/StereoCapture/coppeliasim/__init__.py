@@ -83,6 +83,8 @@ class VREPStereoVisionSensor:
         self.cv_image_l = None
         self.cv_image_r = None
         self.running = False
+        self.position = None
+        self.orientation = None
 
     def VREP_image_to_cv_rgb(self,h, w, img):
         cv_image = np.array(img, dtype=np.uint8)
@@ -98,7 +100,7 @@ class VREPStereoVisionSensor:
         return cv_image
 
     def disconnect(self):
-        # Before closing the connection to V-REP, make sure that the last command sent out had time to arrive. You can guarantee this with (for example):
+        # Before closing the connection to V-REP, make sure that the last command sent out had time to arrive.
         vrep.simxGetPingTime(self.clientID)
 
         # Now close the connection to V-REP:
@@ -113,13 +115,15 @@ class VREPStereoVisionSensor:
                 vrep.simxPauseCommunication(self.clientID,1)
                 res_l, self.resolution, self.image_l = vrep.simxGetVisionSensorImage(self.clientID,self.left_handle,0,vrep.simx_opmode_streaming)
                 res_r, self.resolution, self.image_r = vrep.simxGetVisionSensorImage(self.clientID,self.right_handle,0,vrep.simx_opmode_streaming)
+                res_p, self.position = vrep.simxGetObjectPosition(self.clientID, self.left_handle, -1, vrep.simx_opmode_streaming)
+                res_o, self.orientation = vrep.simxGetObjectOrientation(self.clientID, self.left_handle, -1, vrep.simx_opmode_streaming)
                 vrep.simxPauseCommunication(self.clientID,0)
 
-                if (res_l == 1 and res_r == 1):
+                if (res_l == 1 and res_r == 1 and res_p == 1 and res_o == 1):
                     return True
                 else:
-                    print("Failed to connect to vision sensors")
-                    print("{},{}".format(res_l,res_r))
+                    print("Failed to read vision sensors")
+                    print("{},{},{},{}".format(res_l,res_r,res_p,res_o))
                     return False
             else:
                 print("Failed to connect to vision sensor objects: {},{}".format(res_l,res_r))
@@ -143,9 +147,11 @@ class VREPStereoVisionSensor:
             vrep.simxPauseCommunication(self.clientID,1)
             res_l, self.resolution, self.image_l = vrep.simxGetVisionSensorImage(self.clientID,self.left_handle,0,vrep.simx_opmode_buffer)
             res_r, self.resolution, self.image_r = vrep.simxGetVisionSensorImage(self.clientID,self.right_handle,0,vrep.simx_opmode_buffer)
+            res_p, self.position = vrep.simxGetObjectPosition(self.clientID, self.left_handle, -1, vrep.simx_opmode_buffer)
+            res_o, self.orientation = vrep.simxGetObjectOrientation(self.clientID, self.left_handle, -1, vrep.simx_opmode_buffer)
             vrep.simxPauseCommunication(self.clientID,0)
 
-            if res_l==vrep.simx_return_ok and res_r==vrep.simx_return_ok:
+            if res_l==vrep.simx_return_ok and res_r==vrep.simx_return_ok and res_p==vrep.simx_return_ok and res_o==vrep.simx_return_ok:
                 #print("Converting VREP image to numpy array...")
                 cv_image_l = self.VREP_image_to_cv_rgb(self.resolution[1],self.resolution[0],self.image_l)
                 cv_image_r = self.VREP_image_to_cv_rgb(self.resolution[1],self.resolution[0],self.image_r)
@@ -160,10 +166,12 @@ class VREPStereoVisionSensor:
             print("Failed to connect to VREP")
             return False, None, None
 
+    def get_last_pose(self):
+        return self.position, self.orientation
+
     def close(self):
-        self.disconnect()
         vrep.simxStopSimulation(self.clientID,vrep.simx_opmode_oneshot)
-        vrep.simxFinish(self.clientID)
+        self.disconnect()
 
     def run(self):
         self.initalised = False
