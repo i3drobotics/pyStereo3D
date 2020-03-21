@@ -47,9 +47,12 @@ class VREPConnection:
             connected = False
             while(connected == False):
                 connected,self.clientID = self.vrep_connect()
-            return True,self.clientID
+            print("Connected with clientID: {}".format(self.clientID))
+            return connected,self.clientID
         else:
-            return self.vrep_connect()
+            connected,self.clientID = self.vrep_connect()
+            print("Connected with clientID: {}".format(self.clientID))
+            return connected,self.clientID
 
     def prep_object_pose(self, object_handle, relative_to_handle):
         res1, position = vrep.simxGetObjectPosition(self.clientID, object_handle, relative_to_handle, vrep.simx_opmode_streaming)
@@ -71,14 +74,126 @@ class VREPConnection:
         if (res1==vrep.simx_return_ok and res2==vrep.simx_return_ok):
             res = True
         return res, position, orienation
+
+class VREPStereoVisionSensor:
+    def __init__(self,left_name,right_name,clientID):
+        self.left_name = left_name
+        self.right_name = right_name
+        self.clientID = clientID
+        self.cv_image_l = None
+        self.cv_image_r = None
+        self.running = False
+
+    def VREP_image_to_cv_rgb(self,h, w, img):
+        cv_image = np.array(img, dtype=np.uint8)
+        cv_image.resize([h, w, 3])
+        cv_image = cv2.flip(cv_image, 0)
+        cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
+        return cv_image
+
+    def VREP_depth_to_np(self,h,w,img):
+        cv_image = np.array(img, dtype=np.float32)
+        cv_image.resize([h, w])
+        cv_image = cv2.flip(cv_image, 0)
+        return cv_image
+
+    def disconnect(self):
+        # Before closing the connection to V-REP, make sure that the last command sent out had time to arrive. You can guarantee this with (for example):
+        vrep.simxGetPingTime(self.clientID)
+
+        # Now close the connection to V-REP:
+        vrep.simxFinish(self.clientID)
+
+    def connect(self):
+        if self.clientID !=-1:
+            #print ('Connected to remote API server')
+            res_l,self.left_handle=vrep.simxGetObjectHandle(self.clientID,self.left_name,vrep.simx_opmode_oneshot_wait)
+            res_r,self.right_handle=vrep.simxGetObjectHandle(self.clientID,self.right_name,vrep.simx_opmode_oneshot_wait)
+            if (res_l == vrep.simx_return_ok and res_r == vrep.simx_return_ok):
+                vrep.simxPauseCommunication(self.clientID,1)
+                res_l, self.resolution, self.image_l = vrep.simxGetVisionSensorImage(self.clientID,self.left_handle,0,vrep.simx_opmode_streaming)
+                res_r, self.resolution, self.image_r = vrep.simxGetVisionSensorImage(self.clientID,self.right_handle,0,vrep.simx_opmode_streaming)
+                vrep.simxPauseCommunication(self.clientID,0)
+
+                if (res_l == 1 and res_r == 1):
+                    return True
+                else:
+                    print("Failed to connect to vision sensors")
+                    print("{},{}".format(res_l,res_r))
+                    return False
+            else:
+                print("Failed to connect to vision sensor objects: {},{}".format(res_l,res_r))
+                return False
+        else:
+            print("Failed to connect VREP")
+            return False
+
+    def isConnected(self):
+        if (vrep.simxGetConnectionId(self.clientID)!=-1):
+            return True
+        else:
+            return False
+
+    def isInitalised(self):
+        return self.initalised
+
+    def capture(self):
+        if (vrep.simxGetConnectionId(self.clientID)!=-1):
+            #print("Getting image from VREP...")
+            vrep.simxPauseCommunication(self.clientID,1)
+            res_l, self.resolution, self.image_l = vrep.simxGetVisionSensorImage(self.clientID,self.left_handle,0,vrep.simx_opmode_buffer)
+            res_r, self.resolution, self.image_r = vrep.simxGetVisionSensorImage(self.clientID,self.right_handle,0,vrep.simx_opmode_buffer)
+            vrep.simxPauseCommunication(self.clientID,0)
+
+            if res_l==vrep.simx_return_ok and res_r==vrep.simx_return_ok:
+                #print("Converting VREP image to numpy array...")
+                cv_image_l = self.VREP_image_to_cv_rgb(self.resolution[1],self.resolution[0],self.image_l)
+                cv_image_r = self.VREP_image_to_cv_rgb(self.resolution[1],self.resolution[0],self.image_r)
+
+                self.initalised = True
+                
+                return True, cv_image_l, cv_image_r
+            else:
+                print("Failed to capture vision sensor images: {},{}".format(res_l,res_r))
+                return False, None, None
+        else:
+            print("Failed to connect to VREP")
+            return False, None, None
+
+    def close(self):
+        self.disconnect()
+        vrep.simxStopSimulation(self.clientID,vrep.simx_opmode_oneshot)
+        vrep.simxFinish(self.clientID)
+
+    def run(self):
+        self.initalised = False
+        res = self.connect()
+        if (res):
+            self.running = True
+            while (self.isConnected() and self.running):
+                res, cv_image_l, cv_image_r = self.capture()
+                if (res):
+                    self.cv_image_l = cv_image_l
+                    self.cv_image_r = cv_image_r
+        self.close()
+
+    def stop_threaded(self):
+        self.running = False
+        self.close()
+
+    def run_threaded(self):
+        self.thread = threading.Thread(target=self.run)
+        self.thread.daemon=True
+        self.thread.start()
         
 class VREPVisionSensor:
-    def __init__(self,name,clientID):
+    def __init__(self,name,clientID,en_depth=False):
         self.name = name
         self.clientID = clientID
         self.cv_image = None
         self.cv_dimage = None
         self.running = False
+        self.en_depth = en_depth
 
     def VREP_image_to_cv_rgb(self,h, w, img):
         cv_image = np.array(img, dtype=np.uint8)
@@ -109,7 +224,10 @@ class VREPVisionSensor:
             res,self.handle=vrep.simxGetObjectHandle(self.clientID,self.name,vrep.simx_opmode_oneshot_wait)
             if (res == vrep.simx_return_ok):
                 res1, self.resolution, self.image = vrep.simxGetVisionSensorImage(self.clientID,self.handle,0,vrep.simx_opmode_streaming)
-                res2, resol, self.depthImage = vrep.simxGetVisionSensorDepthBuffer(self.clientID,self.handle,vrep.simx_opmode_streaming)
+                if (self.en_depth):
+                    res2, resol, self.depthImage = vrep.simxGetVisionSensorDepthBuffer(self.clientID,self.handle,vrep.simx_opmode_streaming)
+                else:
+                    res2 = 1
                 res3, self.nearClip = vrep.simxGetObjectFloatParameter(self.clientID,self.handle,vrep.sim_visionfloatparam_near_clipping,vrep.simx_opmode_streaming)
                 res4, self.farClip = vrep.simxGetObjectFloatParameter(self.clientID,self.handle,vrep.sim_visionfloatparam_far_clipping,vrep.simx_opmode_streaming)
                 res5, self.perspective_angle = vrep.simxGetObjectFloatParameter(self.clientID,self.handle,vrep.sim_visionfloatparam_perspective_angle,vrep.simx_opmode_streaming)
@@ -142,13 +260,19 @@ class VREPVisionSensor:
             res1, self.resolution, self.image = vrep.simxGetVisionSensorImage(self.clientID,self.handle,0,vrep.simx_opmode_buffer)
             #res1, self.resolution, self.image = vrep.simxGetVisionSensorImage(self.clientID,self.handle,0,vrep.simx_opmode_oneshot)
             #print("Getting depth image from VREP...")
-            res2, resol, self.depthImage=vrep.simxGetVisionSensorDepthBuffer(self.clientID,self.handle,vrep.simx_opmode_buffer)
+            if self.en_depth:
+                res2, resol, self.depthImage=vrep.simxGetVisionSensorDepthBuffer(self.clientID,self.handle,vrep.simx_opmode_buffer)
+            else:
+                res2 = vrep.simx_return_ok
             #res2, resol, self.depthImage=vrep.simxGetVisionSensorDepthBuffer(self.clientID,self.handle,vrep.simx_opmode_oneshot)
 
             if res1==vrep.simx_return_ok and res2==vrep.simx_return_ok:
                 #print("Converting VREP image to numpy array...")
                 cv_image = self.VREP_image_to_cv_rgb(self.resolution[1],self.resolution[0],self.image)
-                cv_dimage = self.VREP_depth_to_np(self.resolution[1],self.resolution[0],self.depthImage)
+                if self.en_depth:
+                    cv_dimage = self.VREP_depth_to_np(self.resolution[1],self.resolution[0],self.depthImage)
+                else:
+                    cv_dimage = None
 
                 self.initalised = True
                 
@@ -161,6 +285,7 @@ class VREPVisionSensor:
             return False, None, None
 
     def close(self):
+        self.disconnect()
         vrep.simxStopSimulation(self.clientID,vrep.simx_opmode_oneshot)
         vrep.simxFinish(self.clientID)
 

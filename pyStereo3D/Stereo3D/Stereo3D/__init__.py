@@ -311,10 +311,13 @@ class Stereo3D():
         connected = False
         while(not connected):
             connected = self.connect()
+            time.sleep(1)
         while(True):
             exit_code = self.run_frame(defaultSaveFolder,isRectified,confirm_folder)
             if (exit_code == self.EXIT_CODE_QUIT):
                 break
+            if (exit_code == self.EXIT_CODE_FAILED_TO_GRAB_3D):
+                time.sleep(1)
             time.sleep(frame_delay)
         
         self.stereo_camera.close()

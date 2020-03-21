@@ -1,9 +1,9 @@
-from Stereo3D.StereoCapture.VREPCapture import VREPCapture
+from Stereo3D.StereoCapture.coppeliasim import VREPConnection, VREPStereoVisionSensor
 import numpy as np
 import cv2
 
 class StereoCaptureVREP():
-    def __init__(self,camL,camR):
+    def __init__(self,left_camera_name,right_camera_name,api_port):
         """
         Initialisation function for StereoCaptureVREP class.
         :param camL: left camera
@@ -11,8 +11,11 @@ class StereoCaptureVREP():
         :type camL: PylonCapture
         :type camR: PylonCapture
         """
-        self.camL = camL
-        self.camR = camR
+        self.vrep_connection = None
+        self.left_camera_name = left_camera_name
+        self.right_camera_name = right_camera_name
+        self.api_port = api_port
+        self.camera = None
 
     def connect(self):
         """
@@ -20,10 +23,13 @@ class StereoCaptureVREP():
         :returns: success of connection
         :rtype: bool
         """
-        resL = self.camL.connect()
-        resR = self.camR.connect()
-        res = resL and resR
-        return res
+        self.vrep_connection = VREPConnection(self.api_port)
+        res, clientID = self.vrep_connection.connect()
+        if (res):
+            self.camera = VREPStereoVisionSensor(self.left_camera_name,self.right_camera_name,clientID)
+            return self.camera.connect()
+        else:
+            return False
 
     def grab(self):
         """
@@ -31,24 +37,28 @@ class StereoCaptureVREP():
         :returns: success of capture, image left, image right
         :rtype: bool, numpy.array, numpy.array
         """
-        resL,image_left = self.camL.grab()
-        resR,image_right = self.camR.grab()
-        res = resL and resR
-        return res,image_left,image_right
+        if (self.camera.isConnected()):
+            res, image_l, image_r = self.camera.capture()
+            if (res):
+                image_l_mono = cv2.cvtColor(image_l, cv2.COLOR_BGR2GRAY)
+                image_r_mono = cv2.cvtColor(image_r, cv2.COLOR_BGR2GRAY)
+                return res, image_l_mono, image_r_mono
+            else:
+                False, None, None
+        else:
+            return False, None, None
 
     def close(self):
         """
         Close connection to cameras
         """
-        self.camL.close()
-        self.camR.close()
+        self.camera.close()
 
 if __name__ == "__main__":
-    left_api_port = "20000"
-    right_api_port = "20001"
-    camL = VREPCapture(left_api_port)
-    camR = VREPCapture(right_api_port)
-    stcam = StereoCaptureVREP(camL,camR)
+    api_port = 20000
+    left_camera_name = "StereoCameraLeft"
+    right_camera_name = "StereoCameraRight"
+    stcam = StereoCaptureVREP(left_camera_name,right_camera_name,api_port)
     stcam.connect()
     while(True):
         res,imageL,imageR = stcam.grab()

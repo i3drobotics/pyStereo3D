@@ -14,6 +14,7 @@ class VREPCapture():
         :type vision_sensor_name: string
         """
         self.camera = None
+        self.vrep_connection = None
         self.api_port = api_port
         self.vision_sensor_name = vision_sensor_name
 
@@ -23,8 +24,8 @@ class VREPCapture():
         :returns: success
         :rtype: bool
         """
-        vConn = VREPConnection(self.api_port)
-        res, clientID = vConn.connect()
+        self.vrep_connection = VREPConnection(self.api_port)
+        res, clientID = self.vrep_connection.connect()
 
         if (res):
             self.camera = VREPVisionSensor(self.vision_sensor_name,clientID)
