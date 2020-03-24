@@ -9,15 +9,28 @@ from Stereo3D.StereoCapture.coppeliasim.simConst import *
 libsimx = None
 try:
     file_extension = '.so'
+    os_folder = ''
     if platform.system() =='cli':
+        os_folder = 'Windows'
         file_extension = '.dll'
     elif platform.system() =='Windows':
+        os_folder = 'Windows'
         file_extension = '.dll'
     elif platform.system() == 'Darwin':
+        os_folder = 'MacOS'
         file_extension = '.dylib'
-    else:
+    elif platform.system() == 'Linux':
+        dist = platform.dist()
+        if dist[1] == '16.04':
+            os_folder = 'Ubuntu16_04'
+        elif dist[1] == '18.04':
+            os_folder = 'Ubuntu18_04'
+        else:
+            print("Invalid Linux OS verison. MUST be 16.04 or 18.04. Found: {}".format(dist))
         file_extension = '.so'
-    libfullpath = os.path.join(os.path.dirname(__file__),'data','remoteApi' + file_extension)
+    else:
+        print("Invalid OS. Only tested on Ubuntu 16.04 and Windows 10. Found: {}".format(platform.system))
+    libfullpath = os.path.join(os.path.dirname(__file__),'data',os_folder,'remoteApi' + file_extension)
     libsimx = ct.CDLL(libfullpath)
 except:
     print ('----------------------------------------------------')
