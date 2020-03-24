@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import glob
 import os
+import math
 
 class StereoCalibration():
     def __init__(self):
@@ -36,9 +37,36 @@ class StereoCalibration():
             images_cv.append(gray)
         return images_cv
 
-    def write_calibration(self,output_folder):
-        print("Writing calibration to output folder...")
+    def write_yaml_calibration(self,output_folder):
+        # write yamls
+        left_cal_yml_file = output_folder + "/left.yaml"
+        right_cal_yml_file = output_folder + "/right.yaml"
+        fs_l = cv2.FileStorage(left_cal_yml_file, cv2.FILE_STORAGE_WRITE)
+        fs_l.write("image_width",self.stereo_cal["image size"][0])
+        fs_l.write("image_height",self.stereo_cal["image size"][1])
+        fs_l.write("camera_name","leftCamera")
+        fs_l.write("camera_matrix",self.stereo_cal["left"]["m"])
+        fs_l.write("distortion_model","plumb_bob")
+        fs_l.write("distortion_coefficients",self.stereo_cal["left"]["d"])
+        fs_l.write("rectification_matrix",self.stereo_cal["left"]["r"])
+        fs_l.write("projection_matrix",self.stereo_cal["left"]["p"])
+        # rms error for stereo reprojection as yaml doesn't have seperate stereo calibration file
+        fs_l.write("rms_error",self.stereo_cal["error"]) 
+        fs_l.release()
+        fs_r = cv2.FileStorage(right_cal_yml_file, cv2.FILE_STORAGE_WRITE)
+        fs_r.write("image_width",self.stereo_cal["image size"][0])
+        fs_r.write("image_height",self.stereo_cal["image size"][1])
+        fs_r.write("camera_name","rightCamera")
+        fs_r.write("camera_matrix",self.stereo_cal["right"]["m"])
+        fs_r.write("distortion_model","plumb_bob")
+        fs_r.write("distortion_coefficients",self.stereo_cal["right"]["d"])
+        fs_r.write("rectification_matrix",self.stereo_cal["right"]["r"])
+        fs_r.write("projection_matrix",self.stereo_cal["right"]["p"])
+        # rms error for stereo reprojection as yaml doesn't have seperate stereo calibration file
+        fs_r.write("rms_error",self.stereo_cal["error"])
+        fs_r.release()
 
+    def write_xml_calibration(self,output_folder):
         # write calibration xmls
         left_cal_xml_file = output_folder + "/left_calibration.xml"
         right_cal_xml_file = output_folder + "/right_calibration.xml"
@@ -73,35 +101,60 @@ class StereoCalibration():
         fs_r.write("y",self.stereo_cal["right"]["map2"])
         fs_r.release()
 
-        # write yamls
-        left_cal_yml_file = output_folder + "/left.yaml"
-        right_cal_yml_file = output_folder + "/right.yaml"
-        fs_l = cv2.FileStorage(left_cal_yml_file, cv2.FILE_STORAGE_WRITE)
-        fs_l.write("image_width",self.stereo_cal["image size"][0])
-        fs_l.write("image_height",self.stereo_cal["image size"][1])
-        fs_l.write("camera_name","leftCamera")
-        fs_l.write("camera_matrix",self.stereo_cal["left"]["m"])
-        fs_l.write("distortion_model","plumb_bob")
-        fs_l.write("distortion_coefficients",self.stereo_cal["left"]["d"])
-        fs_l.write("rectification_matrix",self.stereo_cal["left"]["r"])
-        fs_l.write("projection_matrix",self.stereo_cal["left"]["p"])
-        # rms error for stereo reprojection as yaml doesn't have seperate stereo calibration file
-        fs_l.write("rms_error",self.stereo_cal["error"]) 
-        fs_l.release()
-        fs_r = cv2.FileStorage(right_cal_yml_file, cv2.FILE_STORAGE_WRITE)
-        fs_r.write("image_width",self.stereo_cal["image size"][0])
-        fs_r.write("image_height",self.stereo_cal["image size"][1])
-        fs_r.write("camera_name","rightCamera")
-        fs_r.write("camera_matrix",self.stereo_cal["right"]["m"])
-        fs_r.write("distortion_model","plumb_bob")
-        fs_r.write("distortion_coefficients",self.stereo_cal["right"]["d"])
-        fs_r.write("rectification_matrix",self.stereo_cal["right"]["r"])
-        fs_r.write("projection_matrix",self.stereo_cal["right"]["p"])
-        # rms error for stereo reprojection as yaml doesn't have seperate stereo calibration file
-        fs_r.write("rms_error",self.stereo_cal["error"])
-        fs_r.release()
-
+    def write_calibration(self,output_folder):
+        print("Writing calibration to output folder...")
+        self.write_yaml_calibration(output_folder)
+        self.write_xml_calibration(output_folder)
         print("Calibration written to output folder.")
+
+    def get_cal_from_ideal(self, resolution, pixel_pitch, focal_length, baseline, output_folder=None):
+        # calculate calibration values
+        sensorSize = [pixel_pitch*resolution[0],pixel_pitch*resolution[1]]
+        v = [sensorSize[0]/(2*focal_length),sensorSize[0]/(2*focal_length)]
+        FOV = [2*math.atan(v[0]),2*math.atan(v[1])]
+        focalLength_px=[(resolution[0]/2)/math.tan(FOV[0]/2),(resolution[1]/2)/math.tan(FOV[1]/2)]
+        c = [resolution[0]/2,resolution[1]/2]
+
+        # assign values to calibration matrices
+        m_l = np.asarray([ 
+            (focalLength_px[0], 0., c[0]), 
+            (0., focalLength_px[1], c[1]), 
+            (0., 0., 1. )])
+        m_r = np.asarray([ 
+            (focalLength_px[0], 0., c[0]), 
+            (0., focalLength_px[1], c[1]), 
+            (0., 0., 1. )])
+        d_l = np.asarray([ 0, 0, 0, 0, 0 ])
+        d_r = np.asarray([ 0, 0, 0, 0, 0 ])
+        r_l = np.asarray([ 
+            (1, 0, 0), 
+            (0, 1, 0),
+            (0, 0, 1)])
+        r_r = np.asarray([ 
+            (1, 0, 0), 
+            (0, 1, 0),
+            (0, 0, 1)])
+        p_l = np.asarray([ 
+            (focalLength_px[0], 0., c[0], 0.), 
+            (0., focalLength_px[1], c[1], 0.), 
+            (0., 0., 1., 0.)])
+        p_r = np.asarray([ 
+            (focalLength_px[0], 0., c[0], -baseline), 
+            (0., focalLength_px[1], c[1], 0.), 
+            (0., 0., 1., 0.)])
+        
+        q = self.calc_q(m_l,p_r,p_l)
+
+        # missing data from calibration files (not possible to know if just using yaml)
+        camera_l_cal = {'m':m_l, 'd':d_l, 'r':r_l, 'p':p_l, 'map1':None, 'map2':None, 'error':None}
+        camera_r_cal = {'m':m_r, 'd':d_r, 'r':r_r, 'p':p_r, 'map1':None, 'map2':None, 'error':None}
+        stereo_cal = {'image size':resolution, 'left':camera_l_cal, 'right':camera_r_cal, 'q':q, 'r':None, 't':None, 'e':None, 'f':None, 'error':None}
+
+        self.stereo_cal = stereo_cal
+        if (output_folder is not None):
+            self.write_yaml_calibration(output_folder)
+
+        return True, stereo_cal
 
     def get_cal_from_yaml(self, left_cal_file, right_cal_file):
         res = False

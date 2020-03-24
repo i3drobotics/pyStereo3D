@@ -39,10 +39,19 @@ folder = "../../SampleData/"
 CAL_MODE_FROM_IMAGES = 0
 CAL_MODE_FROM_YAML = 1
 CAL_MODE_FROM_XML = 2
+CAL_MODE_IDEAL = 3
 
 stcal = None
-cal_mode = CAL_MODE_FROM_YAML
-if (cal_mode == CAL_MODE_FROM_IMAGES):
+cal_mode = CAL_MODE_IDEAL
+if (cal_mode == CAL_MODE_IDEAL):
+    resolution=[2448,2048]
+    pixel_pitch=0.00000345
+    focal_length=0.016
+    baseline=0.3
+    output_folder = folder + "ideal_cal/"
+    stcal = StereoCalibration()
+    stcal.get_cal_from_ideal(resolution, pixel_pitch, focal_length, baseline, output_folder)
+elif (cal_mode == CAL_MODE_FROM_IMAGES):
     # define calibration directories
     left_images_folder = folder + "deimos_cal/"
     right_images_folder = folder + "deimos_cal/"
