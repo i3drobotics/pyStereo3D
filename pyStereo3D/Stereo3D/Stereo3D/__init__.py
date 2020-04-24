@@ -66,6 +66,8 @@ class Stereo3D():
             "property uchar blue\n"
             "end_header\n")
 
+        self.frame_count = 0
+
     def change_camera(self,stereo_camera):
         self.stereo_camera = stereo_camera
 
@@ -152,6 +154,10 @@ class Stereo3D():
         points = depth[mask]
         image = image[mask]
 
+        #TODO replace this with better filter in-case 3D is every large an this becomes invalid
+        points[points >= 100] = 0
+        points[points <= -100] = 0
+
         points = points.reshape(-1, 3)
         image = image.reshape(-1, 3)
 
@@ -225,7 +231,7 @@ class Stereo3D():
         resp = prompt(text='Saving 3D Point Cloud to path: ', title='Save 3D Point Cloud' , default=defaultSaveFolder)
         if (resp is not None and disparity is not None and image is not None):
             # define name of output point cloud ply file
-            ply_filename = resp + points_file_string
+            ply_filename = os.path.join(resp,points_file_string)
 
             # generate depth from disparity
             print("Generating depth from disparity...")
@@ -243,6 +249,7 @@ class Stereo3D():
         # grab 3D disparity from stereo camera
         res, disp = self.grab3D(isRectified)
         if res:
+            self.frame_count += 1
             # prepare images for displaying
             display_image = np.zeros((640, 480), np.uint8)
 
@@ -271,6 +278,19 @@ class Stereo3D():
 
             display_image = np.concatenate((disp_spaced, left_right_dual), axis=0)
             display_image_resize = self.stereo_camera.image_resize(display_image, height=640)
+
+            font = cv2.FONT_HERSHEY_DUPLEX
+            bottomLeftCornerOfText = (10,20)
+            fontScale = 0.4
+            fontColor = 255
+            lineType = 1
+
+            cv2.putText(display_image_resize,'Frame: {}'.format(self.frame_count), 
+                bottomLeftCornerOfText, 
+                font, 
+                fontScale,
+                fontColor,
+                lineType)
             
             # display disparity with stereo images
             cv2.imshow(self.cv_window_name_Images, display_image_resize)

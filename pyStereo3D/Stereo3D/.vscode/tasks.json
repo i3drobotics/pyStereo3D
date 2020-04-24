@@ -4,9 +4,26 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Python: SetupTools: Install twine",
+            "label": "Python: Cythonise",
             "type": "shell",
-            "command": "${config:python.pythonPath} -m pip install --user --upgrade twine",
+            "command": "${config:python.pythonPath} setup.py build_ext --inplace",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation":{
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Python: SetupTools: Install build modules",
+            "type": "shell",
+            "command": "${config:python.pythonPath} -m pip install --user --upgrade twine wheel",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

@@ -27,6 +27,14 @@ Install wheel:
 python -m pip install pypylon-1.5.1-cp36-cp36m-OS.whl 
 ```
 
+**Install I3DR Matcher**
+[Windows]
+Download and install I3DR SGM from [here](https://github.com/i3drobotics/I3DR_SGM/releases/download/v1.0.54/I3DR-SGM-1.0.54-win64.exe)
+[Linux]
+```
+wget https://github.com/i3drobotics/I3DR_SGM/releases/download/v1.0.54/I3DR-SGM-1.0.54-x86_64.deb
+```
+
 **Install Stereo3D**
 ```
 python -m pip install stereo3d
