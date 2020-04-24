@@ -43,7 +43,7 @@ class Stereo3D():
         self.cv_window_name_Images = "[Stereo3D] Images"
 
         cv2.namedWindow(self.cv_window_name_Controls,cv2.WINDOW_NORMAL)
-        cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
+        #cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
 
         cv2.setMouseCallback(self.cv_window_name_Images, self.on_window_mouse)
 
@@ -332,6 +332,7 @@ class Stereo3D():
         while(not connected):
             connected = self.connect()
             time.sleep(1)
+        cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
         while(True):
             exit_code = self.run_frame(defaultSaveFolder,isRectified,confirm_folder)
             if (exit_code == self.EXIT_CODE_QUIT):
