@@ -7,7 +7,7 @@ CAMERA_TYPE_PYLON = 2
 CAMERA_TYPE_IMAGE = 3
 CAMERA_TYPE_VREP = 4
 
-camera_type = CAMERA_TYPE_VREP
+camera_type = CAMERA_TYPE_IMAGE
 
 stcap = None
 camera_name = None
@@ -21,7 +21,7 @@ elif (camera_type == CAMERA_TYPE_DEIMOS):
     stcap = StereoCapture("Deimos",0)
 elif (camera_type == CAMERA_TYPE_IMAGE):
     camera_name = "deimos"
-    stcap = StereoCapture("Image",["../../SampleData/deimos_left.png","../../SampleData/deimos_right.png"])
+    stcap = StereoCapture("Image",["SampleData/deimos_left.png","SampleData/deimos_right.png"])
 elif (camera_type == CAMERA_TYPE_VREP):
     api_port = 20000
     left_vision_sensor_name = "StereoCameraLeft"
@@ -34,7 +34,7 @@ else:
     exit()
 
 # define inout folder
-folder = "../../SampleData/"
+folder = "SampleData/"
 
 CAL_MODE_FROM_IMAGES = 0
 CAL_MODE_FROM_YAML = 1
@@ -42,7 +42,7 @@ CAL_MODE_FROM_XML = 2
 CAL_MODE_IDEAL = 3
 
 stcal = None
-cal_mode = CAL_MODE_IDEAL
+cal_mode = CAL_MODE_FROM_YAML
 if (cal_mode == CAL_MODE_IDEAL):
     resolution=[2448,2048]
     pixel_pitch=0.00000345

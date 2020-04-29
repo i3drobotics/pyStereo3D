@@ -1,6 +1,5 @@
 from Stereo3D import Stereo3D, StereoCalibration
 from Stereo3D.StereoCapture import *
-import os
 
 CAMERA_TYPE_PHOBOS = 0
 CAMERA_TYPE_DEIMOS = 1
