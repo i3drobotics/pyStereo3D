@@ -1,8 +1,12 @@
 # Stereo 3D
 Package for generating 3D data from stereo images.
 
-# Python
-Full description of python package can be found [here](https://github.com/i3drobotics/Stereo3D/blob/master/pyStereo3D/Stereo3D/README.md)
+# Setup
+VSCode tasks are provided to speed up development.
 
-# C++
-Full description of C++ package can be found [here](https://github.com/i3drobotics/Stereo3D/blob/master/cppStereo3D/README.md)
+To Run VS Code Tasks hit F1 -> Select 'Tasks: Run Task' -> Select task.
+
+**Python: Update Stereo3D** - Install/Update Stereo3D pip package
+
+# Build
+Find instructions for building this package at the following [readme](www.google.com) TODO get link for readme

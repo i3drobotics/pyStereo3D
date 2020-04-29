@@ -3,5 +3,11 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
+        {
+            "label": "Python: Update Stereo3D",
+            "type": "shell",
+            "command": "${config:python.pythonPath} -m pip install --upgrade stereo3d",
+            "problemMatcher":[]
+        }
     ]
 }
