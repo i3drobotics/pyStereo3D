@@ -9,4 +9,4 @@ To Run VS Code Tasks hit F1 -> Select 'Tasks: Run Task' -> Select task.
 **Python: Update Stereo3D** - Install/Update Stereo3D pip package
 
 # Build
-Find instructions for building this package at the following [readme](https://github.com/i3drobotics/Stereo3D/blob/master/Stereo3D/README.md)
+Find instructions for building this package at the following [readme](https://github.com/i3drobotics/pyStereo3D/blob/master/Stereo3D/README.md)
