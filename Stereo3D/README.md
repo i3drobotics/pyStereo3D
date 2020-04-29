@@ -34,6 +34,7 @@ Download and install I3DR SGM from [here](https://github.com/i3drobotics/I3DR_SG
 ```
 wget https://github.com/i3drobotics/I3DR_SGM/releases/download/v1.0.54/I3DR-SGM-1.0.54-x86_64.deb
 ```
+*NOTE: I3DRSGM is not currently implimented but in active development.*
 
 **Install Stereo3D**
 ```
@@ -41,5 +42,5 @@ python -m pip install stereo3d
 ```
 
 ## Examples
-See [Samples](https://github.com/i3drobotics/Stereo3D/tree/master/pyStereo3D/SampleScripts) for example scripts of using this package.
+See [Samples](https://github.com/i3drobotics/Stereo3D/tree/master/SampleScripts) for example scripts of using this package.
 
