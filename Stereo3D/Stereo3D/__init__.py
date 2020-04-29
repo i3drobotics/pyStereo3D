@@ -245,7 +245,7 @@ class Stereo3D():
         else:
             print("invalid prompt response or disparity/image is empty")
 
-    def run_frame(self,defaultSaveFolder="",isRectified=False,confirm_folder=True):
+    def run_frame(self,defaultSaveFolder="",isRectified=False,confirm_folder=True,colormap=cv2.COLORMAP_JET):
         # grab 3D disparity from stereo camera
         res, disp = self.grab3D(isRectified)
         if res:
@@ -257,10 +257,16 @@ class Stereo3D():
             rect_image_right_resized = self.stereo_camera.image_resize(self.rect_image_right, height=640)
 
             disp_resized = self.scale_disparity(self.stereo_camera.image_resize(disp, height=640))
-            left_right_dual = np.concatenate((rect_image_left_resized, rect_image_right_resized), axis=1)
+            disp_black_mask = disp_resized <= 0
+            # apply color map to disparity
+            disp_colormap = cv2.applyColorMap(disp_resized, colormap)
+            disp_colormap[disp_black_mask != 0] = [0, 0, 0]
 
-            (lr_dual_h,lr_dual_w) = left_right_dual.shape
-            (d_h,d_w) = disp_resized.shape
+            left_right_dual_gray = np.concatenate((rect_image_left_resized, rect_image_right_resized), axis=1)
+            left_right_dual = cv2.cvtColor(left_right_dual_gray,cv2.COLOR_GRAY2RGB)
+
+            (lr_dual_h,lr_dual_w,_) = left_right_dual.shape
+            (d_h,d_w,_) = disp_colormap.shape
 
             spacer_width_raw = (lr_dual_w - d_w)
             if (spacer_width_raw % 2) == 0:
@@ -272,9 +278,9 @@ class Stereo3D():
                 spacer_width_1 = int((spacer_width_raw / 2))
                 spacer_width_2 = int((spacer_width_raw / 2) + 1)
 
-            disp_spacer_1 = np.zeros((640, spacer_width_1), np.uint8)
-            disp_spacer_2 = np.zeros((640, spacer_width_2), np.uint8)
-            disp_spaced = np.concatenate((disp_spacer_1, disp_resized, disp_spacer_2), axis=1)
+            disp_spacer_1 = np.zeros((640, spacer_width_1,3), np.uint8)
+            disp_spacer_2 = np.zeros((640, spacer_width_2,3), np.uint8)
+            disp_spaced = np.concatenate((disp_spacer_1, disp_colormap, disp_spacer_2), axis=1)
 
             display_image = np.concatenate((disp_spaced, left_right_dual), axis=0)
             display_image_resize = self.stereo_camera.image_resize(display_image, height=640)
@@ -282,7 +288,7 @@ class Stereo3D():
             font = cv2.FONT_HERSHEY_DUPLEX
             bottomLeftCornerOfText = (10,20)
             fontScale = 0.4
-            fontColor = 255
+            fontColor = (255,255,255)
             lineType = 1
 
             cv2.putText(display_image_resize,'Frame: {}'.format(self.frame_count), 
@@ -326,7 +332,7 @@ class Stereo3D():
         else:
             return self.EXIT_CODE_FAILED_TO_GRAB_3D
 
-    def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0,confirm_folder=True):
+    def run(self,defaultSaveFolder="",isRectified=False,frame_delay=0,confirm_folder=True,colormap=cv2.COLORMAP_JET):
         # connect to stereo camera
         connected = False
         while(not connected):
@@ -334,7 +340,7 @@ class Stereo3D():
             time.sleep(1)
         cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
         while(True):
-            exit_code = self.run_frame(defaultSaveFolder,isRectified,confirm_folder)
+            exit_code = self.run_frame(defaultSaveFolder,isRectified,confirm_folder,colormap)
             if (exit_code == self.EXIT_CODE_QUIT):
                 break
             if (exit_code == self.EXIT_CODE_FAILED_TO_GRAB_3D):
