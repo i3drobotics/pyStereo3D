@@ -8,6 +8,7 @@ import glob
 from pymsgbox import *
 from pyntcloud import PyntCloud
 import pandas as pd
+import traceback
 
 class Stereo3D():
     
@@ -228,7 +229,18 @@ class Stereo3D():
 
     def save_point_cloud(self, disparity, image, defaultSaveFolder="", points_file_string="output.ply", confirm_folder=True):
         # prompt user for save location
-        resp = prompt(text='Saving 3D Point Cloud to path: ', title='Save 3D Point Cloud' , default=defaultSaveFolder)
+        resp = defaultSaveFolder
+        if (confirm_folder):
+            try:
+                resp = prompt(text='Saving 3D Point Cloud to path: ', title='Save 3D Point Cloud' , default=defaultSaveFolder)
+            except AssertionError:
+                _, _, tb = sys.exc_info()
+                traceback.print_tb(tb) # Fixed format
+                tb_info = traceback.extract_tb(tb)
+                filename, line, func, text = tb_info[-1]
+
+                print('An error occurred on line {} in statement {}'.format(line, text))
+                print('Will use default save folder: {}'.format(defaultSaveFolder))
         if (resp is not None and disparity is not None and image is not None):
             # define name of output point cloud ply file
             ply_filename = os.path.join(resp,points_file_string)
@@ -316,7 +328,7 @@ class Stereo3D():
             self.save_index += 1
         elif k == ord('p'): # save 3D data as point cloud
             points_file_string = "points_"+str(self.save_index)+".ply"
-            self.save_point_cloud(disp,self.rect_image_left,defaultSaveFolder,points_file_string,confirm_folder)
+            self.save_point_cloud(self.disparity,self.rect_image_left,defaultSaveFolder,points_file_string,confirm_folder)
             self.save_index += 1
         elif k == ord('1'): # change tp OpenCV BM
             self.change_matcher("BM")

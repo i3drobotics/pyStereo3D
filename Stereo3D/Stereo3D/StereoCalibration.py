@@ -115,6 +115,9 @@ class StereoCalibration():
         focalLength_px=[(resolution[0]/2)/math.tan(FOV[0]/2),(resolution[1]/2)/math.tan(FOV[1]/2)]
         c = [resolution[0]/2,resolution[1]/2]
 
+        # TODO find out why focal length when calibrating in the real world only uses x focal length
+        focalLength_px[1] = focalLength_px[0]
+
         # assign values to calibration matrices
         m_l = np.asarray([ 
             (focalLength_px[0], 0., c[0]), 
@@ -139,7 +142,7 @@ class StereoCalibration():
             (0., focalLength_px[1], c[1], 0.), 
             (0., 0., 1., 0.)])
         p_r = np.asarray([ 
-            (focalLength_px[0], 0., c[0], -baseline), 
+            (focalLength_px[0], 0., c[0], -focalLength_px[0]*baseline), 
             (0., focalLength_px[1], c[1], 0.), 
             (0., 0., 1., 0.)])
         
