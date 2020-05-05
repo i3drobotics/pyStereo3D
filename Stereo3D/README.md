@@ -42,5 +42,5 @@ python -m pip install stereo3d
 ```
 
 ## Examples
-See [Samples](https://github.com/i3drobotics/Stereo3D/tree/master/SampleScripts) for example scripts of using this package.
+See [Samples](https://github.com/i3drobotics/pyStereo3D/tree/master/SampleScripts) for example scripts of using this package.
 
