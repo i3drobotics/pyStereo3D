@@ -189,7 +189,7 @@ class StereoCalibration():
         self.stereo_cal = stereo_cal
         return res, stereo_cal
 
-    def get_cal_from_xml(self, left_cal_file, right_cal_file, stereo_cal_file, right_rect_file, left_rect_file):
+    def get_cal_from_xml(self, left_cal_file, right_cal_file, stereo_cal_file, left_rect_file, right_rect_file):
         res = False
         fs_l = cv2.FileStorage(left_cal_file, cv2.FILE_STORAGE_READ)
         fs_r = cv2.FileStorage(right_cal_file, cv2.FILE_STORAGE_READ)

@@ -225,6 +225,7 @@ class Stereo3D():
 
             return True, disp
         else:
+            print("Failed to grab stereo image pair")
             return False, None
 
     def save_point_cloud(self, disparity, image, defaultSaveFolder="", points_file_string="output.ply", confirm_folder=True):
@@ -256,6 +257,27 @@ class Stereo3D():
                 alert('3D point cloud saved.', 'Save 3D Point Cloud')
         else:
             print("invalid prompt response or disparity/image is empty")
+
+    def save_all_current(self,saveFolder):
+        confirm_folder = False
+        left_file_string=str(self.save_index)+"_l.png"
+        right_file_string=str(self.save_index)+"_r.png"
+        self.stereo_camera.save_images(self.image_left,self.image_right,saveFolder,left_file_string,right_file_string,confirm_folder)
+
+        left_file_string="rect_"+str(self.save_index)+"_l.png"
+        right_file_string="rect_"+str(self.save_index)+"_r.png"
+        self.stereo_camera.save_images(self.rect_image_left,self.rect_image_right,saveFolder,left_file_string,right_file_string,confirm_folder)
+
+        points_file_string = "points_"+str(self.save_index)+".ply"
+        self.save_point_cloud(self.disparity,self.rect_image_left,saveFolder,points_file_string,confirm_folder)
+
+
+    def run_frame_no_gui(self,saveFolder,isRectified=False):
+        # grab 3D disparity from stereo camera
+        res, _ = self.grab3D(isRectified)
+        if res:
+            self.save_all_current(saveFolder)
+        return res
 
     def run_frame(self,defaultSaveFolder="",isRectified=False,confirm_folder=True,colormap=cv2.COLORMAP_JET):
         # grab 3D disparity from stereo camera
