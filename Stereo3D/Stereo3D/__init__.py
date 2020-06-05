@@ -126,7 +126,7 @@ class Stereo3D():
         if stereo_matcher == "BM":
             cv2.createTrackbar("Texture", self.cv_window_name_Controls , default_texture_threshold, 100, self.on_texture_threshold_trackbar)
 
-        cv2.createTrackbar("Sp size", self.cv_window_name_Controls , default_speckle_size, 30, self.on_speckle_size_trackbar)
+        cv2.createTrackbar("Sp size", self.cv_window_name_Controls , default_speckle_size, 500, self.on_speckle_size_trackbar)
         cv2.createTrackbar("Sp range", self.cv_window_name_Controls , default_speckle_range, 1000, self.on_speckle_range_trackbar)
 
     def connect(self):

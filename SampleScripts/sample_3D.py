@@ -20,8 +20,11 @@ elif (camera_type == CAMERA_TYPE_DEIMOS):
     camera_name = "deimos"
     stcap = StereoCapture("Deimos",0)
 elif (camera_type == CAMERA_TYPE_IMAGE):
-    camera_name = "deimos"
-    stcap = StereoCapture("Image",["SampleData/deimos_left.png","SampleData/deimos_right.png"])
+    #camera_name = "deimos"
+    #stcap = StereoCapture("Image",["SampleData/deimos_left.png","SampleData/deimos_right.png"])
+    camera_name = "phobos"
+    folder_i = "D:/Users/monke/OneDrive - i3d Robotics Ltd/Phobos/BenCCal/test_images"
+    stcap = StereoCapture("Image",[folder_i+"/left_a.png",folder_i+"/right_a.png"])
 elif (camera_type == CAMERA_TYPE_VREP):
     api_port = 20000
     left_vision_sensor_name = "StereoCameraLeft"
@@ -34,14 +37,16 @@ else:
     exit()
 
 # define inout folder
-folder = "SampleData/"
+#folder = "SampleData/"
 
 CAL_MODE_FROM_IMAGES = 0
 CAL_MODE_FROM_YAML = 1
 CAL_MODE_FROM_XML = 2
 
+folder = "D:/Users/monke/OneDrive - i3d Robotics Ltd/Phobos/BenCCal/calibration_1/"
+
 stcal = None
-cal_mode = CAL_MODE_FROM_YAML
+cal_mode = CAL_MODE_FROM_XML
 if (cal_mode == CAL_MODE_FROM_IMAGES):
     # define calibration directories
     left_images_folder = folder + "deimos_cal/"
@@ -68,11 +73,18 @@ elif (cal_mode == CAL_MODE_FROM_YAML):
     stcal.get_cal_from_yaml(left_cal_file,right_cal_file)
 elif (cal_mode == CAL_MODE_FROM_XML):
     # define calibration files for left and right image
+    '''
     left_cal_file = folder + camera_name +"_left_calibration.xml"
     right_cal_file = folder + camera_name +"_right_calibration.xml"
     stereo_cal_file = folder + camera_name +"_stereo_calibration.xml"
     left_rect_file = folder + camera_name +"_left_rectification.xml"
     right_rect_file = folder + camera_name +"_right_rectification.xml"
+    '''
+    left_cal_file = folder +"left_calibration.xml"
+    right_cal_file = folder +"right_calibration.xml"
+    stereo_cal_file = folder +"stereo_calibration.xml"
+    left_rect_file = folder +"left_rectification.xml"
+    right_rect_file = folder +"right_rectification.xml"
     # get calibration from yaml files
     stcal = StereoCalibration()
     stcal.get_cal_from_xml(left_cal_file,right_cal_file,stereo_cal_file,left_rect_file,right_rect_file)
@@ -80,4 +92,5 @@ elif (cal_mode == CAL_MODE_FROM_XML):
 # setup Stereo3D
 s3D = Stereo3D(stcap,stcal,"BM")
 # run Stereo3D GUI for generating 3D
-s3D.run(folder)
+out_folder="D:/Users/monke/OneDrive - i3d Robotics Ltd/Phobos/BenCCal/output/"
+s3D.run(out_folder)
