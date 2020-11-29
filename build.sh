@@ -1,7 +1,7 @@
 cd stereo3d
 python -m pip install --upgrade pip
 python -m pip install setuptools wheel twine
-python -m pip install -r requirements.txt
+python -m pip install --upgrade -r requirements.txt
 python -m pip install flake8 pytest
 
 # stop the build if there are Python syntax errors or undefined names

@@ -18,10 +18,10 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_dir={'stereo3d':'stereo3d'},
     package_data={'stereo3d':[
-        'StereoCapture/coppeliasim/data/MacOS/remoteApi.dylib',
-        'StereoCapture/coppeliasim/data/Ubuntu16_04/remoteApi.so',
-        'StereoCapture/coppeliasim/data/Ubuntu18_04/remoteApi.so',
-        'StereoCapture/coppeliasim/data/Windows/remoteApi.dll',
+        'stereocapture/coppeliasim/data/MacOS/remoteApi.dylib',
+        'stereocapture/coppeliasim/data/Ubuntu16_04/remoteApi.so',
+        'stereocapture/coppeliasim/data/Ubuntu18_04/remoteApi.so',
+        'stereocapture/coppeliasim/data/Windows/remoteApi.dll',
     ]},
     install_requires=[
         'numpy; python_version == "3.5"',
