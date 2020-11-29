@@ -15,4 +15,4 @@ def test_init_stereo3d():
     stcap = StereoCapture("Image",[
         os.path.join(sample_data_folder,"deimos_left.png"),
         os.path.join(sample_data_folder,"deimos_right.png")])
-    Stereo3D(stcap,stcal,"BM")
+    Stereo3D(stcap,stcal,"BM",show_window=False)

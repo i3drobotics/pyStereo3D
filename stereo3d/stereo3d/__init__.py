@@ -12,7 +12,7 @@ import traceback
 
 class Stereo3D():
     
-    def __init__(self,stereo_camera,stereo_calibration,stereo_matcher=None):
+    def __init__(self,stereo_camera,stereo_calibration,stereo_matcher=None,show_window=True):
         """
         Initialisation function for PickPlace3D. Defines the devices used.
         If you would like to use the methods without connecting a camera then initaialise Stereo3D as 's3D = Stereo3D()'.
@@ -43,12 +43,14 @@ class Stereo3D():
         self.cv_window_name_Controls = "[Stereo3D] Controls"
         self.cv_window_name_Images = "[Stereo3D] Images"
 
-        cv2.namedWindow(self.cv_window_name_Controls,cv2.WINDOW_NORMAL)
-        #cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
+        self.show_window = show_window
+        if self.show_window:
+            cv2.namedWindow(self.cv_window_name_Controls,cv2.WINDOW_NORMAL)
+            #cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
 
-        cv2.setMouseCallback(self.cv_window_name_Images, self.on_window_mouse)
+            cv2.setMouseCallback(self.cv_window_name_Images, self.on_window_mouse)
 
-        cv2.resizeWindow(self.cv_window_name_Controls, 400,0 )
+            cv2.resizeWindow(self.cv_window_name_Controls, 400,0 )
 
         self.change_matcher(stereo_matcher)
 
@@ -115,19 +117,20 @@ class Stereo3D():
             else:
                 self.matcher = stereo_matcher
 
-        cv2.destroyWindow(self.cv_window_name_Controls)
-        cv2.namedWindow(self.cv_window_name_Controls,cv2.WINDOW_NORMAL)
+        if self.show_window:
+            cv2.destroyWindow(self.cv_window_name_Controls)
+            cv2.namedWindow(self.cv_window_name_Controls,cv2.WINDOW_NORMAL)
 
-        cv2.createTrackbar("Min disp", self.cv_window_name_Controls , default_min_disp, 2000, self.on_min_disparity_trackbar)
-        cv2.createTrackbar("Disp", self.cv_window_name_Controls , default_num_disparities, 30, self.on_num_disparities_trackbar)
-        cv2.createTrackbar("Blck sze", self.cv_window_name_Controls , default_block_size, 100, self.on_block_size_trackbar)
+            cv2.createTrackbar("Min disp", self.cv_window_name_Controls , default_min_disp, 2000, self.on_min_disparity_trackbar)
+            cv2.createTrackbar("Disp", self.cv_window_name_Controls , default_num_disparities, 30, self.on_num_disparities_trackbar)
+            cv2.createTrackbar("Blck sze", self.cv_window_name_Controls , default_block_size, 100, self.on_block_size_trackbar)
 
-        cv2.createTrackbar("Uniq", self.cv_window_name_Controls , default_uniqueness_ratio, 100, self.on_uniqueness_ratio_trackbar)
-        if stereo_matcher == "BM":
-            cv2.createTrackbar("Texture", self.cv_window_name_Controls , default_texture_threshold, 100, self.on_texture_threshold_trackbar)
+            cv2.createTrackbar("Uniq", self.cv_window_name_Controls , default_uniqueness_ratio, 100, self.on_uniqueness_ratio_trackbar)
+            if stereo_matcher == "BM":
+                cv2.createTrackbar("Texture", self.cv_window_name_Controls , default_texture_threshold, 100, self.on_texture_threshold_trackbar)
 
-        cv2.createTrackbar("Sp size", self.cv_window_name_Controls , default_speckle_size, 500, self.on_speckle_size_trackbar)
-        cv2.createTrackbar("Sp range", self.cv_window_name_Controls , default_speckle_range, 1000, self.on_speckle_range_trackbar)
+            cv2.createTrackbar("Sp size", self.cv_window_name_Controls , default_speckle_size, 500, self.on_speckle_size_trackbar)
+            cv2.createTrackbar("Sp range", self.cv_window_name_Controls , default_speckle_range, 1000, self.on_speckle_range_trackbar)
 
     def connect(self):
         """
@@ -332,8 +335,9 @@ class Stereo3D():
                 fontColor,
                 lineType)
             
-            # display disparity with stereo images
-            cv2.imshow(self.cv_window_name_Images, display_image_resize)
+            if self.show_window:
+                # display disparity with stereo images
+                cv2.imshow(self.cv_window_name_Images, display_image_resize)
 
         k = cv2.waitKey(1)          
         if k == ord('q'): # exit if 'q' key pressed
@@ -356,10 +360,11 @@ class Stereo3D():
             self.change_matcher("BM")
         elif k == ord('2'): # change to OpenCV SGBM
             self.change_matcher("SGBM")
-        if cv2.getWindowProperty(self.cv_window_name_Images,cv2.WND_PROP_VISIBLE) < 1:        
-            return self.EXIT_CODE_QUIT
-        if cv2.getWindowProperty(self.cv_window_name_Controls,cv2.WND_PROP_VISIBLE) < 1:        
-            return self.EXIT_CODE_QUIT
+        if self.show_window:
+            if cv2.getWindowProperty(self.cv_window_name_Images,cv2.WND_PROP_VISIBLE) < 1:        
+                return self.EXIT_CODE_QUIT
+            if cv2.getWindowProperty(self.cv_window_name_Controls,cv2.WND_PROP_VISIBLE) < 1:        
+                return self.EXIT_CODE_QUIT
 
         if res:
             return self.EXIT_CODE_GRAB_3D_SUCCESS
@@ -372,7 +377,8 @@ class Stereo3D():
         while(not connected):
             connected = self.connect()
             time.sleep(1)
-        cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
+        if self.show_window:
+            cv2.namedWindow(self.cv_window_name_Images,cv2.WINDOW_NORMAL)
         while(True):
             exit_code = self.run_frame(defaultSaveFolder,isRectified,confirm_folder,colormap)
             if (exit_code == self.EXIT_CODE_QUIT):
