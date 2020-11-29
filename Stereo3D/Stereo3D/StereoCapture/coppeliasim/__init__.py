@@ -10,7 +10,7 @@
 # should be a corresponding call to simxFinish at the end!
 
 try:
-    from Stereo3D.StereoCapture.coppeliasim import sim as vrep
+    from stereo3d.stereocapture.coppeliasim import sim as vrep
 except:
     print('--------------------------------------------------------------')
     print('"sim.py" could not be imported. This means very probably that')

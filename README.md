@@ -1,12 +1,17 @@
-# Stereo 3D
-Package for generating 3D data from stereo images.
+# Stereo3D
+Python package for generating 3D data from stereo cameras and images.
 
-# Setup
-VSCode tasks are provided to speed up development.
+## Install
+### Pip
+Install via pip
+```
+pip install stereo3d
+```
 
-To Run VS Code Tasks hit F1 -> Select 'Tasks: Run Task' -> Select task.
+### Install Pylon
+Basler cameras require the software package Pylon to install the required drivers. Download and install it from [here](https://www.baslerweb.com/en/products/software/basler-pylon-camera-software-suite/)  
+***WARNING***: Make sure to download v1.5.1 as this is currently the only supported version for use with PyPylon. 
 
-**Python: Update Stereo3D** - Install/Update Stereo3D pip package
+## Examples
+See [Samples](https://github.com/i3drobotics/pyStereo3D/tree/master/SampleScripts) for example scripts of using this package.
 
-# Build
-Find instructions for building this package at the following [readme](https://github.com/i3drobotics/pyStereo3D/blob/master/Stereo3D/README.md)

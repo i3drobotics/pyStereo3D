@@ -1,4 +1,4 @@
-from Stereo3D.StereoCapture.coppeliasim import VREPConnection, VREPStereoVisionSensor
+from stereo3d.stereocapture.coppeliasim import VREPConnection, VREPStereoVisionSensor
 import numpy as np
 import cv2
 

@@ -5,15 +5,15 @@ __copyright__ = "Copyright 2020, Industrial 3D Robotics"
 __license__ = "MIT"
 __docformat__ = 'reStructuredText'
 
-from Stereo3D.StereoCapture.PylonCapture import PylonCapture
-from Stereo3D.StereoCapture.CVCapture import CVCapture
-from Stereo3D.StereoCapture.CVImageCapture import CVImageCapture
-from Stereo3D.StereoCapture.CVImageFolderCapture import CVImageFolderCapture
-from Stereo3D.StereoCapture.VREPCapture import VREPCapture
-from Stereo3D.StereoCapture.StereoCapturePylon import StereoCapturePylon
-from Stereo3D.StereoCapture.StereoCaptureCVSplit import StereoCaptureCVSplit
-from Stereo3D.StereoCapture.StereoCaptureCVDual import StereoCaptureCVDual
-from Stereo3D.StereoCapture.StereoCaptureVREP import StereoCaptureVREP
+from stereo3d.stereocapture.pyloncapture import PylonCapture
+from stereo3d.stereocapture.cvcapture import CVCapture
+from stereo3d.stereocapture.cvimagecapture import CVImageCapture
+from stereo3d.stereocapture.cvimagefoldercapture import CVImageFolderCapture
+from stereo3d.stereocapture.vrepcapture import VREPCapture
+from stereo3d.stereocapture.stereocapturepylon import StereoCapturePylon
+from stereo3d.stereocapture.stereocapturecvsplit import StereoCaptureCVSplit
+from stereo3d.stereocapture.stereocapturecvdual import StereoCaptureCVDual
+from stereo3d.stereocapture.stereocapturevrep import StereoCaptureVREP
 
 from pymsgbox import *
 import numpy as np

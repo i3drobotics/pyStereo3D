@@ -1,4 +1,4 @@
-from Stereo3D.StereoCapture.CVCapture import CVCapture
+from stereo3d.stereocapture.cvcapture import CVCapture
 import numpy as np
 import cv2
 

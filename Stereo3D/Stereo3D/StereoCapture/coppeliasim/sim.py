@@ -3,7 +3,7 @@ import struct
 import sys
 import os
 import ctypes as ct
-from Stereo3D.StereoCapture.coppeliasim.simConst import *
+from stereo3d.stereocapture.coppeliasim.simConst import *
 
 #load library
 libsimx = None

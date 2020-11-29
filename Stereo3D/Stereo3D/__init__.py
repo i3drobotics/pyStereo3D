@@ -1,5 +1,5 @@
-from Stereo3D.StereoCapture import StereoCapture
-from Stereo3D.StereoCalibration import StereoCalibration
+from stereo3d.stereocapture import StereoCapture
+from stereo3d.stereocalibration import StereoCalibration
 import numpy as np
 import cv2
 import os

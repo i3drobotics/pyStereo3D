@@ -1,4 +1,4 @@
-from Stereo3D.StereoCapture.PylonCapture import PylonCapture
+from stereo3d.stereocapture.pyloncapture import PylonCapture
 import numpy as np
 import cv2
 
