@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
@@ -24,9 +24,6 @@ jobs:
     - name: Install pypylon generic
       if: matrix.os == 'windows-latest'
       run: pip install pypylon
-    - name: Install pypylon linux py35
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.5'
-      run: pip install https://github.com/basler/pypylon/releases/download/1.6.0/pypylon-1.6.0-cp35-cp35m-linux_x86_64.whl
     - name: Install pypylon linux py36
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.6'
       run: pip install https://github.com/basler/pypylon/releases/download/1.6.0/pypylon-1.6.0-cp36-cp36m-linux_x86_64.whl

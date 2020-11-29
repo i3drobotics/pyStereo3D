@@ -24,12 +24,14 @@ setuptools.setup(
         'StereoCapture/coppeliasim/data/Windows/remoteApi.dll',
     ]},
     install_requires=[
-        'numpy','opencv-python','pymsgbox','pypylon', 'pyntcloud'
+        'numpy; python_version == "3.5"',
+        'numpy==1.19.3; python_version > "3.5"',
+        'opencv-python','pymsgbox','pypylon', 'pyntcloud'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.5',
+    python_requires='>=3.6',
 )
