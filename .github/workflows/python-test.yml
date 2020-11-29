@@ -21,8 +21,8 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install flake8 pytest
-    - if: ${{ matrix.os }} == windows-latest
-      name: Install pypylon generic
+    - name: Install pypylon generic
+      if: matrix.os == 'windows-latest'
       run: |
         pip install pypylon
     - name: Install requirements
