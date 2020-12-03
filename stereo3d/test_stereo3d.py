@@ -1,6 +1,8 @@
 """This module tests core functionality in i3drsgm module"""
 import os
-from stereo3d import Stereo3D, StereoCalibration, StereoCapture
+from stereo3d import Stereo3D
+from stereo3d.stereocalibration import StereoCalibration
+from stereo3d.stereocapture import StereoCapture
 
 def test_init_stereo3d():
     """Test initalising Stereo3D class"""
