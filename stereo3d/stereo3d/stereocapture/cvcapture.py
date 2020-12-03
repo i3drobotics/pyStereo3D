@@ -1,8 +1,8 @@
 import cv2
-import numpy as np
+
 
 class CVCapture():
-    def __init__(self,camera_index):
+    def __init__(self, camera_index):
         """
         Initialisation function for CVCapture class.
         :param camera_index: id of the video capturing device to open
@@ -35,14 +35,15 @@ class CVCapture():
         """
         self.camera.release()
 
+
 if __name__ == '__main__':
-    camera_index = 0
-    cam = CVCapture(camera_index)
+    CAMERA_INDEX = 0
+    cam = CVCapture(CAMERA_INDEX)
     cam.connect()
-    while(True):
+    while True:
         res, image = cam.grab()
-        if (res):
-            image_resized = cv2.resize(image,(640,480))
+        if res:
+            image_resized = cv2.resize(image, (640, 480))
             cv2.imshow('Image', image_resized)
             k = cv2.waitKey(1)
             if k == ord('q'):

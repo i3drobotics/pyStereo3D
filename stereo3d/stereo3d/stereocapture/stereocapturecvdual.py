@@ -2,8 +2,9 @@ from stereo3d.stereocapture.cvcapture import CVCapture
 import numpy as np
 import cv2
 
+
 class StereoCaptureCVDual():
-    def __init__(self,cam):
+    def __init__(self, cam):
         """
         Initialisation function for StereoCaptureCVDual class.
         :param cam: camera to use as stereo device. This should be a camera that send the data as a single rgb image where red=left_image and green=right_image.
@@ -40,15 +41,16 @@ class StereoCaptureCVDual():
         """
         self.cam.close()
 
+
 if __name__ == "__main__":
     cam = CVCapture(0)
     stcam = StereoCaptureCVDual(cam)
     stcam.connect()
-    while(True):
-        res,imageL,imageR = stcam.grab()
-        if (res):
+    while True:
+        res, imageL, imageR = stcam.grab()
+        if res:
             stereo_image = np.concatenate((imageL, imageR), axis=1)
-            stereo_image_resized = cv2.resize(stereo_image,(1280,480))
+            stereo_image_resized = cv2.resize(stereo_image, (1280, 480))
             cv2.imshow('Stereo Image', stereo_image_resized)
             k = cv2.waitKey(1)
             if k == ord('q'):

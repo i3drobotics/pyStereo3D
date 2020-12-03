@@ -2,6 +2,7 @@ from stereo3d.stereocapture.cvcapture import CVCapture
 import numpy as np
 import cv2
 
+
 class StereoCaptureCVSplit():
     def __init__(self,camL,camR):
         """
@@ -43,16 +44,17 @@ class StereoCaptureCVSplit():
         self.camL.close()
         self.camR.close()
 
+
 if __name__ == "__main__":
     camL = CVCapture(0)
     camR = CVCapture(1)
-    stcam = StereoCaptureCVSplit(camL,camR)
+    stcam = StereoCaptureCVSplit(camL, camR)
     stcam.connect()
-    while(True):
-        res,imageL,imageR = stcam.grab()
-        if (res):
+    while True:
+        res, imageL, imageR = stcam.grab()
+        if res:
             stereo_image = np.concatenate((imageL, imageR), axis=1)
-            stereo_image_resized = cv2.resize(stereo_image,(1280,480))
+            stereo_image_resized = cv2.resize(stereo_image, (1280, 480))
             cv2.imshow('Stereo Image', stereo_image_resized)
             k = cv2.waitKey(1)
             if k == ord('q'):

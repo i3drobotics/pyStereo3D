@@ -5,15 +5,15 @@ import os
 import ctypes as ct
 from stereo3d.stereocapture.coppeliasim.simConst import *
 
-#load library
+# load library
 libsimx = None
 try:
     file_extension = '.so'
     os_folder = ''
-    if platform.system() =='cli':
+    if platform.system() == 'cli':
         os_folder = 'Windows'
         file_extension = '.dll'
-    elif platform.system() =='Windows':
+    elif platform.system() == 'Windows':
         os_folder = 'Windows'
         file_extension = '.dll'
     elif platform.system() == 'Darwin':
@@ -30,7 +30,7 @@ try:
         file_extension = '.so'
     else:
         print("Invalid OS. Only tested on Ubuntu 16.04 and Windows 10. Found: {}".format(platform.system))
-    libfullpath = os.path.join(os.path.dirname(__file__),'data',os_folder,'remoteApi' + file_extension)
+    libfullpath = os.path.join(os.path.dirname(__file__), 'data',os_folder, 'remoteApi' + file_extension)
     libsimx = ct.CDLL(libfullpath)
 except:
     print ('----------------------------------------------------')

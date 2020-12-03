@@ -3,9 +3,9 @@ import numpy as np
 from stereo3d.stereocapture.coppeliasim import VREPConnection, VREPVisionSensor
 import os
 
-class VREPCapture():
 
-    def __init__(self,api_port,vision_sensor_name):
+class VREPCapture():
+    def __init__(self, api_port, vision_sensor_name):
         """
         Initialisation function for VREPCapture class.
         :param api_port: VREP api port
@@ -28,7 +28,7 @@ class VREPCapture():
         res, clientID = self.vrep_connection.connect()
 
         if (res):
-            self.camera = VREPVisionSensor(self.vision_sensor_name,clientID)
+            self.camera = VREPVisionSensor(self.vision_sensor_name, clientID)
             self.camera.run_threaded()
         return res
 
@@ -51,15 +51,16 @@ class VREPCapture():
         """
         self.camera.stop_threaded()
 
+
 if __name__ == '__main__':
-    api_port = 20000
-    vision_sensor_name = "StereoCameraLeft"
-    cam = VREPCapture(api_port,vision_sensor_name)
+    API_PORT = 20000
+    VISION_SENSOR_NAME = "StereoCameraLeft"
+    cam = VREPCapture(API_PORT, VISION_SENSOR_NAME)
     cam.connect()
-    while(True):
+    while True:
         res, image = cam.grab()
-        if (res):
-            image_resized = cv2.resize(image,(640,480))
+        if res:
+            image_resized = cv2.resize(image, (640, 480))
             cv2.imshow('Image', image_resized)
             k = cv2.waitKey(1)
             if k == ord('q'):

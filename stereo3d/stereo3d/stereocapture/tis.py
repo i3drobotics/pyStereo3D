@@ -50,7 +50,7 @@ class TIS:
         try:
             self.pipeline = Gst.parse_launch(p)
         except GLib.Error as error:
-            print("Error creating pipeline: {0}".format(err))
+            print("Error creating pipeline: {0}".format(error))
             raise
 
         self.pipeline.set_state(Gst.State.READY)
@@ -75,7 +75,7 @@ class TIS:
                     self.ImageCallback(self, *self.ImageCallbackData);
 
             except GLib.Error as error:
-                print("Error on_new_buffer pipeline: {0}".format(err))
+                print("Error on_new_buffer pipeline: {0}".format(error))
                 raise
         return False
 
@@ -85,7 +85,7 @@ class TIS:
             self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
 
         except GLib.Error as error:
-            print("Error starting pipeline: {0}".format(err))
+            print("Error starting pipeline: {0}".format(error))
             raise
 
     def __convert_sample_to_numpy(self):
@@ -139,7 +139,7 @@ class TIS:
             print("Snap_image can not be called, if a callback is set.")
             return False
 
-        wait_for_image(timeout)
+        self.wait_for_image(timeout)
         if( self.sample != None and self.newsample == True):
             self.__convert_sample_to_numpy()
             return True
@@ -168,7 +168,7 @@ class TIS:
         try:
             self.source.set_tcam_property(PropertyName,GObject.Value(type(value),value))
         except GLib.Error as error:
-            print("Error set Property {0}: {1}",PropertyName, format(err))
+            print("Error set Property {0}: {1}",PropertyName, format(error))
             raise
 
     def Set_Image_Callback(self, function, *data):

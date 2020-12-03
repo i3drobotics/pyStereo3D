@@ -2,8 +2,9 @@ from stereo3d.stereocapture.pyloncapture import PylonCapture
 import numpy as np
 import cv2
 
+
 class StereoCapturePylon():
-    def __init__(self,camL,camR):
+    def __init__(self, camL, camR):
         """
         Initialisation function for StereoCapturePylon class.
         :param camL: left camera
@@ -31,10 +32,10 @@ class StereoCapturePylon():
         :returns: success of capture, image left, image right
         :rtype: bool, numpy.array, numpy.array
         """
-        resL,image_left = self.camL.grab()
-        resR,image_right = self.camR.grab()
+        resL, image_left = self.camL.grab()
+        resR, image_right = self.camR.grab()
         res = resL and resR
-        return res,image_left,image_right
+        return res, image_left, image_right
 
     def close(self):
         """
@@ -43,18 +44,19 @@ class StereoCapturePylon():
         self.camL.close()
         self.camR.close()
 
+
 if __name__ == "__main__":
     left_camera_serial = "22864917"
     right_camera_serial = "22864912"
     camL = PylonCapture(left_camera_serial)
     camR = PylonCapture(right_camera_serial)
-    stcam = StereoCapturePylon(camL,camR)
+    stcam = StereoCapturePylon(camL, camR)
     stcam.connect()
-    while(True):
-        res,imageL,imageR = stcam.grab()
-        if (res):
+    while True:
+        res, imageL, imageR = stcam.grab()
+        if res:
             stereo_image = np.concatenate((imageL, imageR), axis=1)
-            stereo_image_resized = cv2.resize(stereo_image,(1280,480))
+            stereo_image_resized = cv2.resize(stereo_image, (1280, 480))
             cv2.imshow('Stereo Image', stereo_image_resized)
             k = cv2.waitKey(1)
             if k == ord('q'):

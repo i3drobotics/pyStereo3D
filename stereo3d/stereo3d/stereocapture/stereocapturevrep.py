@@ -2,8 +2,9 @@ from stereo3d.stereocapture.coppeliasim import VREPConnection, VREPStereoVisionS
 import numpy as np
 import cv2
 
+
 class StereoCaptureVREP():
-    def __init__(self,left_camera_name,right_camera_name,api_port):
+    def __init__(self, left_camera_name, right_camera_name, api_port):
         """
         Initialisation function for StereoCaptureVREP class.
         :param camL: left camera
@@ -26,7 +27,8 @@ class StereoCaptureVREP():
         self.vrep_connection = VREPConnection(self.api_port)
         res, clientID = self.vrep_connection.connect()
         if (res):
-            self.camera = VREPStereoVisionSensor(self.left_camera_name,self.right_camera_name,clientID)
+            self.camera = VREPStereoVisionSensor(
+                self.left_camera_name, self.right_camera_name, clientID)
             return self.camera.connect()
         else:
             return False
@@ -54,17 +56,18 @@ class StereoCaptureVREP():
         """
         self.camera.close()
 
+
 if __name__ == "__main__":
-    api_port = 20000
-    left_camera_name = "StereoCameraLeft"
-    right_camera_name = "StereoCameraRight"
-    stcam = StereoCaptureVREP(left_camera_name,right_camera_name,api_port)
+    API_PORT = 20000
+    LEFT_CAMERA_NAME = "StereoCameraLeft"
+    RIGHT_CAMERA_NAME = "StereoCameraRight"
+    stcam = StereoCaptureVREP(LEFT_CAMERA_NAME, RIGHT_CAMERA_NAME, API_PORT)
     stcam.connect()
-    while(True):
-        res,imageL,imageR = stcam.grab()
-        if (res):
+    while True:
+        res, imageL, imageR = stcam.grab()
+        if res:
             stereo_image = np.concatenate((imageL, imageR), axis=1)
-            stereo_image_resized = cv2.resize(stereo_image,(1280,480))
+            stereo_image_resized = cv2.resize(stereo_image, (1280, 480))
             cv2.imshow('Stereo Image', stereo_image_resized)
             k = cv2.waitKey(1)
             if k == ord('q'):

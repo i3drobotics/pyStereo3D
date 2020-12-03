@@ -1,4 +1,4 @@
-#TODO TIS module is linux only so class not included in the package untill windows support is added
+# TODO TIS module is linux only so class not included in the package untill windows support is added
 
 import cv2
 import numpy as np
