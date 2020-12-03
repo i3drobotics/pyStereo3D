@@ -1,4 +1,5 @@
-from stereo3d import Stereo3D, StereoCalibration
+from stereo3d import Stereo3D
+from stereo3d.stereocalibration import StereoCalibration
 from stereo3d.stereocapture import StereoCapture, StereoCaptureVREP
 
 CAMERA_TYPE_PHOBOS = 0
