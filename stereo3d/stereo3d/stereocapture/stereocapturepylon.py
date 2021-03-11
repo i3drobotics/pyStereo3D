@@ -46,8 +46,8 @@ class StereoCapturePylon():
 
 
 if __name__ == "__main__":
-    left_camera_serial = "22864917"
-    right_camera_serial = "22864912"
+    left_camera_serial = "23517286"
+    right_camera_serial = "23517294"
     camL = PylonCapture(left_camera_serial)
     camR = PylonCapture(right_camera_serial)
     stcam = StereoCapturePylon(camL, camR)

@@ -1,6 +1,26 @@
 import cv2
+import numpy as np
 from pypylon import pylon
+from threading import Lock
 
+# Image event handler.
+class PylonImageEventHandler(pylon.ImageEventHandler):
+    def __init__(self):
+        super().__init__()
+        self.image_mutex = Lock()
+        with self.image_mutex:
+            self.image = np.array([])
+
+    def OnImageGrabbed(self, camera, grabResult):
+        if grabResult.GrabSucceeded():
+            with self.image_mutex:
+                self.image = grabResult.GetArray().copy()
+
+    def getImage(self):
+        image = np.array([])
+        with self.image_mutex:
+            image = self.image.copy()
+        return image
 
 class PylonCapture():
     PIXEL_FORMAT_MONO8 = "Mono8"
@@ -56,6 +76,16 @@ class PylonCapture():
         self.camera = pylon.InstantCamera(
             pylon.TlFactory.GetInstance().CreateDevice(device))
 
+        self.converter = pylon.ImageFormatConverter()
+        # converter.OutputPixelFormat = pylon.PixelType_BGR8packed
+        self.converter.OutputPixelFormat = pylon.PixelType_Mono8
+        self.converter.OutputBitAlignment = pylon.OutputBitAlignment_MsbAligned
+
+        self.camera.RegisterConfiguration(pylon.ConfigurationEventHandler(), pylon.RegistrationMode_ReplaceAll,
+                                        pylon.Cleanup_Delete)
+        self.image_event_handler = PylonImageEventHandler()
+        self.camera.RegisterImageEventHandler(self.image_event_handler, pylon.RegistrationMode_Append, pylon.Cleanup_Delete)
+
         # TODO fix pypylon problem where settings are
         # reset on startup (previous settings are wiped)
         self.camera.Open()
@@ -92,12 +122,8 @@ class PylonCapture():
             self.camera.GetNodeMap().GetNode("BinningVerticalMode").SetValue("Average")
             self.camera.GetNodeMap().GetNode("BinningVertical").SetValue(self.binning)
 
-        self.camera.StartGrabbing()
+        self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly, pylon.GrabLoop_ProvidedByInstantCamera)
 
-        self.converter = pylon.ImageFormatConverter()
-        # converter.OutputPixelFormat = pylon.PixelType_BGR8packed
-        self.converter.OutputPixelFormat = pylon.PixelType_Mono8
-        self.converter.OutputBitAlignment = pylon.OutputBitAlignment_MsbAligned
         return True
 
     def grab(self):
@@ -108,22 +134,11 @@ class PylonCapture():
         """
         if self.camera is not None:
             if self.camera.IsGrabbing():
-                grabResult = self.camera.RetrieveResult(
-                    5000, pylon.TimeoutHandling_ThrowException)
-
-                if grabResult.GrabSucceeded():
-                    image = self.converter.Convert(grabResult)
-                    frame = image.GetArray()
-                    if frame is not None:
-                        return True, frame
-                    else:
-                        return False, None
+                frame = self.image_event_handler.getImage()
+                if frame.size != 0:
+                    return True, frame
                 else:
-                    print("Error: ",
-                          grabResult.ErrorCode,
-                          grabResult.ErrorDescription)
                     return False, None
-                grabResult.Release()
             else:
                 return False, None
         else:
@@ -138,7 +153,7 @@ class PylonCapture():
 
 
 if __name__ == '__main__':
-    CAMERA_SERIAL = "22864917"
+    CAMERA_SERIAL = "23517286"
     cam = PylonCapture(CAMERA_SERIAL)
     cam.connect()
     while True:
