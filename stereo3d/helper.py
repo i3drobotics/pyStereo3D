@@ -1,6 +1,7 @@
 """This module is used for manually testing functionality while developing stereo3d module"""
-from stereo3D import Stereo3D, StereoCalibration
-from stereo3D.StereoCapture import StereoCapture, StereoCaptureVREP
+from stereo3d import Stereo3D
+from stereo3d.stereocalibration import StereoCalibration
+from stereo3d.stereocapture import StereoCapture
 
 CAMERA_TYPE_PHOBOS = 0
 CAMERA_TYPE_DEIMOS = 1
@@ -22,20 +23,13 @@ elif (camera_type == CAMERA_TYPE_DEIMOS):
     stcap = StereoCapture("Deimos",0)
 elif (camera_type == CAMERA_TYPE_IMAGE):
     camera_name = "deimos"
-    stcap = StereoCapture("Image",["SampleData/deimos_left.png","SampleData/deimos_right.png"])
-elif (camera_type == CAMERA_TYPE_VREP):
-    api_port = 20000
-    left_vision_sensor_name = "StereoCameraLeft"
-    right_vision_sensor_name = "StereoCameraRight"
-    camera_name = "vrep"
-    stcapVREP = StereoCaptureVREP(left_vision_sensor_name,right_vision_sensor_name,api_port)
-    stcap = StereoCapture(stcapVREP)
+    stcap = StereoCapture("Image",["sample_data/deimos_left.png","sample_data/deimos_right.png"])
 else:
     print("Invalid camera type.")
     exit()
 
 # define inout folder
-folder = "SampleData/"
+folder = "sample_data/"
 
 CAL_MODE_FROM_IMAGES = 0
 CAL_MODE_FROM_YAML = 1
@@ -88,6 +82,6 @@ elif (cal_mode == CAL_MODE_FROM_XML):
     stcal.get_cal_from_xml(left_cal_file,right_cal_file,stereo_cal_file,left_rect_file,right_rect_file)
 
 # setup Stereo3D
-s3D = Stereo3D(stcap,stcal,"BM")
+s3D = Stereo3D(stcap,stcal,"I3DRSGM")
 # run Stereo3D GUI for generating 3D
 s3D.run(folder)

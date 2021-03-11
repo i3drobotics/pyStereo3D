@@ -26,7 +26,7 @@ setuptools.setup(
     install_requires=[
         'numpy; python_version == "3.5"',
         'numpy==1.19.3; python_version > "3.5"',
-        'opencv-python','pymsgbox','pypylon', 'pyntcloud'
+        'opencv-python','pymsgbox','pypylon', 'pyntcloud', 'i3drsgm'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

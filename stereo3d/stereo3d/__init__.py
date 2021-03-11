@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 from pymsgbox import prompt, alert
 from pyntcloud import PyntCloud
+from i3drsgm import I3DRSGM
 import pandas as pd
 import traceback
 
@@ -57,6 +58,7 @@ class Stereo3D():
 
             cv2.resizeWindow(self.cv_window_name_Controls, 400, 0)
 
+        self.matcher_name = ""
         self.change_matcher(stereo_matcher)
 
         # Once init has been called matcher can be changed e.g.
@@ -100,6 +102,7 @@ class Stereo3D():
             self.matcher.setSpeckleRange(default_speckle_range)
         else:
             if stereo_matcher == "BM":
+                self.matcher_name = stereo_matcher
                 self.matcher = cv2.StereoBM_create()
                 calc_block = (2 * default_block_size + 5)
                 self.matcher.setBlockSize(calc_block)
@@ -110,6 +113,7 @@ class Stereo3D():
                 self.matcher.setSpeckleWindowSize(default_speckle_size)
                 self.matcher.setSpeckleRange(default_speckle_range)
             elif stereo_matcher == "SGBM":
+                self.matcher_name = stereo_matcher
                 self.matcher = cv2.StereoSGBM_create()
                 calc_block = (2 * default_block_size + 5)
                 self.matcher.setBlockSize(calc_block)
@@ -119,6 +123,13 @@ class Stereo3D():
                 # self.matcher.setTextureThreshold(default_texture_threshold)
                 self.matcher.setSpeckleWindowSize(default_speckle_size)
                 self.matcher.setSpeckleRange(default_speckle_range)
+            elif stereo_matcher == "I3DRSGM":
+                self.matcher_name = stereo_matcher
+                self.matcher = I3DRSGM()
+                self.matcher.setWindowSize(11)
+                self.matcher.setMinDisparity(0)
+                self.matcher.setDisparityRange(16*120)
+                self.matcher.setPyamidLevel(6)
             else:
                 self.matcher = stereo_matcher
 
@@ -163,8 +174,15 @@ class Stereo3D():
         return res
 
     def gen3D(self, left_image, right_image):
-        disparity = self.matcher.compute(left_image, right_image)
-        disparity = disparity.astype(np.float32) / 16.0
+        if (self.matcher_name == "I3DRSGM"):
+            valid, disparity = self.matcher.forwardMatch(left_image, right_image)
+            disparity = -disparity.astype(np.float32)
+            disparity[disparity==99999]=0.0
+            disparity[disparity<=0]=0.0
+            disparity = np.nan_to_num(disparity, nan=0.0,posinf=0.0,neginf=0.0)
+        else:
+            disparity = self.matcher.compute(left_image, right_image)
+            disparity = disparity.astype(np.float32) / 16.0
         return disparity
 
     def genDepth(self, disparity):
@@ -212,22 +230,32 @@ class Stereo3D():
         self.matcher.setMinDisparity(min_disp)
 
     def on_block_size_trackbar(self, val):
-        self.matcher.setBlockSize(2 * val + 5)
+        if (self.matcher_name == "I3DRSGM"):
+            self.matcher.setWindowSize(2 * val + 5)
+        else:
+            self.matcher.setBlockSize(2 * val + 5)
 
     def on_num_disparities_trackbar(self, val):
-        self.matcher.setNumDisparities(16*(val+1))
+        if (self.matcher_name == "I3DRSGM"):
+            self.matcher.setDisparityRange(16*((val*10)+1))
+        else:
+            self.matcher.setNumDisparities(16*(val+1))
 
     def on_texture_threshold_trackbar(self, val):
-        self.matcher.setTextureThreshold(val)
+        if (self.matcher_name != "I3DRSGM"):
+            self.matcher.setTextureThreshold(val)
 
     def on_uniqueness_ratio_trackbar(self, val):
-        self.matcher.setUniquenessRatio(val)
+        if (self.matcher_name != "I3DRSGM"):
+            self.matcher.setUniquenessRatio(val)
 
     def on_speckle_size_trackbar(self, val):
-        self.matcher.setSpeckleWindowSize(val)
+        if (self.matcher_name != "I3DRSGM"):
+            self.matcher.setSpeckleWindowSize(val)
 
     def on_speckle_range_trackbar(self, val):
-        self.matcher.setSpeckleRange(val)
+        if (self.matcher_name != "I3DRSGM"):
+            self.matcher.setSpeckleRange(val)
 
     def on_window_mouse(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
