@@ -2,18 +2,18 @@
 import os
 import sys
 import time
+import traceback
 import numpy as np
 import cv2
 from pymsgbox import prompt, alert
 from pyntcloud import PyntCloud
 try:
     from i3drsgm import I3DRSGM
-    i3drsgm_imported = True
+    I3DRSGM_IMPORTED = True
 except ImportError:
     I3DRSGM = None
-    i3drsgm_imported = False
+    I3DRSGM_IMPORTED = False
 import pandas as pd
-import traceback
 
 
 class Stereo3D():
@@ -129,14 +129,14 @@ class Stereo3D():
                 self.matcher.setSpeckleWindowSize(default_speckle_size)
                 self.matcher.setSpeckleRange(default_speckle_range)
             elif stereo_matcher == "I3DRSGM":
-                if i3drsgm_imported:
+                if I3DRSGM_IMPORTED:
                     self.matcher_name = stereo_matcher
                     self.matcher = I3DRSGM()
                     self.matcher.setWindowSize(11)
                     self.matcher.setMinDisparity(0)
                     self.matcher.setDisparityRange(16*120)
                     self.matcher.setPyamidLevel(6)
-                 else:
+                else:
                     raise Exception("Failed to import I3DRSGM")
             else:
                 self.matcher = stereo_matcher
@@ -182,9 +182,9 @@ class Stereo3D():
         return res
 
     def gen3D(self, left_image, right_image):
-        if (self.matcher_name == "I3DRSGM"):
-            if i3drsgm_imported:
-                valid, disparity = self.matcher.forwardMatch(left_image, right_image)
+        if self.matcher_name == "I3DRSGM":
+            if I3DRSGM_IMPORTED:
+                _, disparity = self.matcher.forwardMatch(left_image, right_image)
                 disparity = -disparity.astype(np.float32)
                 disparity[disparity==99999]=0.0
                 disparity[disparity<=0]=0.0
@@ -228,7 +228,7 @@ class Stereo3D():
 
     def scale_disparity(self, disparity):
         minV, maxV, _, _ = cv2.minMaxLoc(disparity)
-        if (maxV - minV != 0):
+        if maxV - minV != 0:
             scaled_disp = cv2.convertScaleAbs(
                 disparity, alpha=255.0/(maxV - minV),
                 beta=-minV * 255.0/(maxV - minV))
@@ -241,8 +241,8 @@ class Stereo3D():
         self.matcher.setMinDisparity(min_disp)
 
     def on_block_size_trackbar(self, val):
-        if (self.matcher_name == "I3DRSGM"):
-            if i3drsgm_imported:
+        if self.matcher_name == "I3DRSGM":
+            if I3DRSGM_IMPORTED:
                 self.matcher.setWindowSize(2 * val + 5)
             else:
                 raise Exception("Failed to import I3DRSGM")
@@ -250,8 +250,8 @@ class Stereo3D():
             self.matcher.setBlockSize(2 * val + 5)
 
     def on_num_disparities_trackbar(self, val):
-        if (self.matcher_name == "I3DRSGM"):
-            if i3drsgm_imported:
+        if self.matcher_name == "I3DRSGM":
+            if I3DRSGM_IMPORTED:
                 self.matcher.setDisparityRange(16*((val*10)+1))
             else:
                 raise Exception("Failed to import I3DRSGM")
@@ -259,15 +259,15 @@ class Stereo3D():
             self.matcher.setNumDisparities(16*(val+1))
 
     def on_texture_threshold_trackbar(self, val):
-        if (self.matcher_name != "I3DRSGM"):
+        if self.matcher_name != "I3DRSGM":
             self.matcher.setTextureThreshold(val)
 
     def on_uniqueness_ratio_trackbar(self, val):
-        if (self.matcher_name != "I3DRSGM"):
+        if self.matcher_name != "I3DRSGM":
             self.matcher.setUniquenessRatio(val)
 
     def on_speckle_size_trackbar(self, val):
-        if (self.matcher_name != "I3DRSGM"):
+        if self.matcher_name != "I3DRSGM":
             self.matcher.setSpeckleWindowSize(val)
 
     def on_speckle_range_trackbar(self, val):
@@ -280,10 +280,10 @@ class Stereo3D():
 
     def grab3D(self, isRectified=False):
         res, image_left, image_right = self.stereo_camera.grab()
-        if (res):
+        if res:
             self.image_left = image_left
             self.image_right = image_right
-            if (isRectified):
+            if isRectified:
                 self.rect_image_left = self.image_left
                 self.rect_image_right = self.image_right
             else:
@@ -304,7 +304,7 @@ class Stereo3D():
                          confirm_folder=True):
         # prompt user for save location
         resp = defaultSaveFolder
-        if (confirm_folder):
+        if confirm_folder:
             try:
                 resp = prompt(
                     text='Saving 3D Point Cloud to path: ',
@@ -332,7 +332,7 @@ class Stereo3D():
             # write 3D data to ply with color from image on points
             self.write_ply(ply_filename, disparity, depth, image)
             print("Point cloud save complete.")
-            if (confirm_folder):
+            if confirm_folder:
                 alert('3D point cloud saved.', 'Save 3D Point Cloud')
         else:
             print("invalid prompt response or disparity/image is empty")
