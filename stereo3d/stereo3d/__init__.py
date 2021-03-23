@@ -244,7 +244,7 @@ class Stereo3D():
         if (self.matcher_name == "I3DRSGM"):
             if i3drsgm_imported:
                 self.matcher.setWindowSize(2 * val + 5)
-           else:
+            else:
                 raise Exception("Failed to import I3DRSGM")
         else:
             self.matcher.setBlockSize(2 * val + 5)
