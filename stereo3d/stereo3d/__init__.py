@@ -184,11 +184,15 @@ class Stereo3D():
     def gen3D(self, left_image, right_image):
         if self.matcher_name == "I3DRSGM":
             if I3DRSGM_IMPORTED:
-                _, disparity = self.matcher.forwardMatch(left_image, right_image)
-                disparity = -disparity.astype(np.float32)
-                disparity[disparity==99999]=0.0
-                disparity[disparity<=0]=0.0
-                disparity = np.nan_to_num(disparity, nan=0.0,posinf=0.0,neginf=0.0)
+                _, disparity = self.matcher.forwardMatch(
+                    left_image, right_image
+                )
+                disparity = disparity.astype(np.float32)
+                disparity[disparity == 99999] = 0.0
+                disparity[disparity == -99999] = 0.0
+                disparity[disparity <= 0] = 0.0
+                disparity = np.nan_to_num(
+                    disparity, nan=0.0, posinf=0.0, neginf=0.0)
             else:
                 raise Exception("Failed to import I3DRSGM")
         else:
