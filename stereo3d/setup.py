@@ -16,8 +16,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/i3drobotics/Stereo3D",
     packages=setuptools.find_packages(),
-    package_dir={'stereo3d':'stereo3d'},
-    package_data={'stereo3d':[
+    package_dir={'stereo3d': 'stereo3d'},
+    package_data={'stereo3d': [
         'stereocapture/coppeliasim/data/MacOS/remoteApi.dylib',
         'stereocapture/coppeliasim/data/Ubuntu16_04/remoteApi.so',
         'stereocapture/coppeliasim/data/Ubuntu18_04/remoteApi.so',
@@ -26,7 +26,7 @@ setuptools.setup(
     install_requires=[
         'numpy; python_version == "3.5"',
         'numpy==1.19.3; python_version > "3.5"',
-        'opencv-python','pymsgbox','pypylon', 'pyntcloud'
+        'opencv-python', 'pymsgbox', 'pypylon', 'pyntcloud'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
