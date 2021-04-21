@@ -187,10 +187,9 @@ class Stereo3D():
                 _, disparity = self.matcher.forwardMatch(
                     left_image, right_image
                 )
-                disparity = disparity.astype(np.float32)
+                disparity = -disparity.astype(np.float32)
                 disparity[disparity == 99999] = 0.0
-                disparity[disparity == -99999] = 0.0
-                disparity[disparity <= 0] = 0.0
+                disparity[disparity == 0] = int(disparity.min() - 1)
                 disparity = np.nan_to_num(
                     disparity, nan=0.0, posinf=0.0, neginf=0.0)
             else:
