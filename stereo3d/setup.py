@@ -25,7 +25,7 @@ setuptools.setup(
     ]},
     install_requires=[
         'numpy; python_version == "3.5"',
-        'numpy==1.19.3; python_version > "3.5"',
+        'numpy==1.22.0; python_version > "3.5"',
         'opencv-python', 'pymsgbox', 'pypylon', 'pyntcloud'
     ],
     classifiers=[
